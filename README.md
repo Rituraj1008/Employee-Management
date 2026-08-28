@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Office Management System
 
-## Getting Started
+An internal office management application built with Next.js 16, Prisma, and Supabase PostgreSQL.
 
-First, run the development server:
+## Features
+
+- Authentication with JWT sessions
+- Role-based access control (Super Admin, HR, Manager, Employee)
+- Employee Management
+- Department Management
+- Attendance (check-in / check-out)
+- Leave Management
+- Task Management
+- Role-aware dashboards
+
+## Tech Stack
+
+- **Next.js 16** (App Router, Server Components)
+- **React 19**
+- **TypeScript**
+- **Tailwind CSS v4**
+- **shadcn/ui** (Radix UI primitives)
+- **Prisma 5** ORM
+- **PostgreSQL** (Supabase)
+- **Zod** validation
+- **bcryptjs** password hashing
+- **jose** JWT sessions
+
+## Local Development
+
+### 1. Clone and install
+
+```bash
+npm install
+```
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` with your values:
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | Supabase pooler connection string (port 6543) |
+| `DIRECT_URL` | Supabase direct connection string (port 5432) |
+| `AUTH_SECRET` | Random secret (min 32 chars) — run `openssl rand -base64 32` |
+| `NEXT_PUBLIC_APP_URL` | App URL (http://localhost:3000 for local) |
+
+### 3. Set up database
+
+```bash
+npm run db:migrate
+npm run db:seed
+```
+
+### 4. Start development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Demo Credentials
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Role | Email | Password |
+|---|---|---|
+| Super Admin | admin@company.com | Password123! |
+| HR | hr@company.com | Password123! |
+| Manager | manager@company.com | Password123! |
+| Employee | alice@company.com | Password123! |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Supabase Setup
 
-## Learn More
+1. Create a new Supabase project
+2. Go to **Project Settings → Database → Connection string**
+3. Copy the **Transaction pooler** URL (port 6543) → `DATABASE_URL`
+4. Copy the **Direct connection** URL (port 5432) → `DIRECT_URL`
 
-To learn more about Next.js, take a look at the following resources:
+## Vercel Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push to GitHub
+2. Import repo in Vercel
+3. Add all environment variables from `.env.example`
+4. After first deploy, run: `npx prisma migrate deploy` (or use Vercel CLI)
+5. Configure custom domain `office_management.riturajray.com` in Vercel settings
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev          # Start dev server
+npm run build        # Production build
+npm run lint         # ESLint
+npm run db:generate  # Regenerate Prisma client
+npm run db:migrate   # Run migrations (dev)
+npm run db:push      # Push schema without migration
+npm run db:seed      # Seed demo data
+npm run db:studio    # Open Prisma Studio
+```
