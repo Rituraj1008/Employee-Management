@@ -1,14 +1,46 @@
 import type { Metadata } from "next";
-import { requireRole } from "@/lib/auth/guards";
+import { requireAuth } from "@/lib/auth/guards";
 import { RoleType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import { SalaryPage } from "@/components/salary/salary-page";
+import { MySalaryPage } from "@/components/salary/my-salary-page";
 
-export const metadata: Metadata = { title: "Salary Management" };
+export const metadata: Metadata = { title: "Salary" };
 
 export default async function Page() {
-  await requireRole([RoleType.SUPER_ADMIN]);
+  const session = await requireAuth();
 
+  /* ── Non-admin: show own salary view ── */
+  if (session.role !== RoleType.SUPER_ADMIN) {
+    if (!session.employeeId) redirect("/dashboard");
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: session.employeeId },
+      select: {
+        employeeCode: true,
+        firstName: true,
+        lastName: true,
+        user: { select: { role: true } },
+        department: { select: { name: true } },
+        designation: { select: { name: true } },
+      },
+    });
+
+    if (!employee) redirect("/dashboard");
+
+    return (
+      <MySalaryPage
+        employeeName={`${employee.firstName} ${employee.lastName}`}
+        employeeCode={employee.employeeCode}
+        role={employee.user.role}
+        department={employee.department?.name ?? null}
+        designation={employee.designation?.name ?? null}
+      />
+    );
+  }
+
+  /* ── Admin: full salary management ── */
   const employees = await prisma.employee.findMany({
     where: {
       status: "ACTIVE",

@@ -5,15 +5,8 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RoleType } from "@prisma/client";
 import {
-  LayoutDashboard,
-  Users,
-  Building2,
-  Clock,
-  CalendarOff,
-  CheckSquare,
-  Menu,
-  LogOut,
-  UsersRound,
+  LayoutDashboard, Users, Building2, Clock, CalendarOff,
+  CheckSquare, Menu, LogOut, UsersRound, Banknote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -28,7 +21,8 @@ const NAV_ITEMS = [
   { label: "Teams",       href: "/teams",       icon: UsersRound,      roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER] },
   { label: "Attendance",  href: "/attendance",  icon: Clock,           roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
   { label: "Leaves",      href: "/leaves",      icon: CalendarOff,     roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
-  { label: "Tasks",       href: "/tasks",        icon: CheckSquare,     roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
+  { label: "Tasks",       href: "/tasks",       icon: CheckSquare,     roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
+  { label: "Salary",      href: "/salary",      icon: Banknote,        roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
 ];
 
 const ROLE_BADGE: Record<RoleType, { label: string; cls: string }> = {
@@ -78,17 +72,17 @@ export function MobileNav({ role, userName }: MobileNavProps) {
       </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-64 p-0 bg-sidebar text-sidebar-foreground">
-          <SheetHeader className="h-14 flex flex-row items-center gap-2.5 px-4 border-b border-sidebar-border">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xs shrink-0">
-              W
+        <SheetContent side="left" className="w-64 p-0 bg-sidebar text-sidebar-foreground flex flex-col">
+          <SheetHeader className="h-14 flex flex-row items-center gap-2 px-4 border-b border-sidebar-border shrink-0">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 shadow-sm shadow-violet-500/30 shrink-0">
+              <span className="font-black text-white text-xs select-none">E</span>
             </div>
-            <SheetTitle className="text-sm font-semibold text-sidebar-foreground tracking-tight">
-              WorkForce
+            <SheetTitle className="text-sm font-bold tracking-tight bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
+              Emplyra
             </SheetTitle>
           </SheetHeader>
 
-          <nav className="p-2 space-y-0.5 flex-1">
+          <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
             {visibleItems.map((item) => {
               const active =
                 item.href === "/dashboard"
@@ -104,8 +98,8 @@ export function MobileNav({ role, userName }: MobileNavProps) {
                   className={cn(
                     "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
                     active
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
@@ -115,9 +109,9 @@ export function MobileNav({ role, userName }: MobileNavProps) {
             })}
           </nav>
 
-          <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border p-3 space-y-1">
+          <div className="border-t border-sidebar-border p-3 space-y-1 shrink-0">
             <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-md">
-              <div className="h-6 w-6 rounded-full bg-primary/15 text-primary text-xs font-semibold flex items-center justify-center shrink-0">
+              <div className="h-7 w-7 rounded-full bg-primary/15 text-primary text-xs font-semibold flex items-center justify-center shrink-0">
                 {initials}
               </div>
               <div className="min-w-0 flex-1">
@@ -129,7 +123,7 @@ export function MobileNav({ role, userName }: MobileNavProps) {
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2.5 w-full rounded-md px-2.5 py-2 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+              className="flex items-center gap-2.5 w-full rounded-md px-2.5 py-2 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
             >
               <LogOut className="h-4 w-4 shrink-0" />
               Sign out

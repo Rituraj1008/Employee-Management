@@ -332,13 +332,14 @@ export function TasksPage({
 
       {/* Create Task Sheet */}
       <Sheet open={createOpen} onOpenChange={setCreateOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto" side="right">
-          <SheetHeader className="pb-4">
+        <SheetContent className="w-full sm:max-w-lg p-0 gap-0 flex flex-col" side="right">
+          <SheetHeader className="px-4 sm:px-6 pt-5 pb-4 border-b border-border shrink-0">
             <SheetTitle>Create New Task</SheetTitle>
             <p className="text-sm text-muted-foreground">Assign a task to any team member</p>
           </SheetHeader>
 
-          <form onSubmit={handleCreate} className="space-y-5">
+          <div className="flex-1 overflow-y-auto">
+          <form onSubmit={handleCreate} className="space-y-5 px-4 sm:px-6 py-5">
             {/* Title */}
             <div className="space-y-1.5">
               <Label htmlFor="title">
@@ -368,7 +369,7 @@ export function TasksPage({
             <Separator />
 
             {/* Priority & Due Date */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-1.5">
                 <Label>Priority</Label>
                 <Select name="priority" defaultValue="MEDIUM">
@@ -509,6 +510,7 @@ export function TasksPage({
               </Button>
             </div>
           </form>
+          </div>
         </SheetContent>
       </Sheet>
     </div>

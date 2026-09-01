@@ -10,6 +10,7 @@ export interface SessionPayload {
   email: string;
   role: RoleType;
   employeeId?: string;
+  name?: string;
 }
 
 function getSecret(): Uint8Array {

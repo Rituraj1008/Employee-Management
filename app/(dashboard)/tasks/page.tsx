@@ -30,16 +30,11 @@ export default async function Page({
     where.assignedToId = session.userId;
   }
 
-  // Managers only see tasks they created or are assigned to their dept employees
+  // Managers see tasks they created or assigned to employees in their managed dept
   if (isManager && session.employeeId) {
-    const managedDepts = await prisma.department.findMany({
-      where: { managerId: session.employeeId, isActive: true },
-      select: { id: true },
-    });
-    const deptIds = managedDepts.map((d) => d.id);
     where.OR = [
       { createdById: session.userId },
-      { assignedTo: { employee: { departmentId: { in: deptIds } } } },
+      { assignedTo: { employee: { department: { managerId: session.employeeId } } } },
     ];
   }
 

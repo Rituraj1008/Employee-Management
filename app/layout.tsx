@@ -12,10 +12,10 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | WorkForce",
-    default: "WorkForce — Employee Management Platform",
+    template: "%s | Emplyra",
+    default: "Emplyra — Employee Management Platform",
   },
-  description: "Modern workforce management platform for HR teams, managers, and employees.",
+  description: "Modern employee management platform for HR teams, managers, and employees.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

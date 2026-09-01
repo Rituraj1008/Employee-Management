@@ -75,7 +75,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Salary",
     href: "/salary",
     icon: Banknote,
-    roles: [RoleType.SUPER_ADMIN],
+    roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE],
   },
 ];
 
@@ -136,16 +136,16 @@ export function Sidebar({ role, userName, userEmail, collapsed, onCollapse }: Si
           )}
         >
           {!collapsed && (
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xs shrink-0">
-                W
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 shadow-sm shadow-violet-500/30 shrink-0">
+                <span className="font-black text-white text-xs select-none">E</span>
               </div>
-              <span className="font-semibold text-sm tracking-tight text-sidebar-foreground">WorkForce</span>
+              <span className="font-bold text-sm tracking-tight bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">Emplyra</span>
             </div>
           )}
           {collapsed && (
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xs">
-              W
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 shadow-sm shadow-violet-500/30">
+              <span className="font-black text-white text-xs select-none">E</span>
             </div>
           )}
           {!collapsed && (
@@ -217,27 +217,42 @@ export function Sidebar({ role, userName, userEmail, collapsed, onCollapse }: Si
         </nav>
 
         {/* User footer */}
-        <div className="border-t border-sidebar-border p-2 space-y-1">
-          {!collapsed && (
-            <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-md">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-xs">
+        <div className="border-t border-sidebar-border p-2">
+          {!collapsed ? (
+            <div className="flex items-center gap-2.5 rounded-lg px-2 py-2 bg-sidebar-accent/40">
+              {/* Avatar */}
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500/20 to-violet-500/20 text-primary font-bold text-xs ring-1 ring-primary/20 select-none">
                 {initials}
               </div>
+
+              {/* Name + role */}
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium text-sidebar-foreground truncate">{userName}</p>
+                <p className="text-xs font-semibold text-sidebar-foreground truncate leading-tight">{userName}</p>
                 <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full", ROLE_COLORS[role])}>
                   {ROLE_LABELS[role]}
                 </span>
               </div>
-            </div>
-          )}
 
-          {collapsed ? (
+              {/* Logout icon */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleLogout}
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/40 hover:bg-red-500/10 hover:text-red-500 transition-colors"
+                    aria-label="Sign out"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-xs font-medium">Sign out</TooltipContent>
+              </Tooltip>
+            </div>
+          ) : (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={handleLogout}
-                  className="flex h-8 w-8 items-center justify-center rounded-md mx-auto text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-md mx-auto text-sidebar-foreground/50 hover:bg-red-500/10 hover:text-red-500 transition-colors"
                   aria-label="Sign out"
                 >
                   <LogOut className="h-3.5 w-3.5" />
@@ -245,14 +260,6 @@ export function Sidebar({ role, userName, userEmail, collapsed, onCollapse }: Si
               </TooltipTrigger>
               <TooltipContent side="right" className="text-xs font-medium">Sign out</TooltipContent>
             </Tooltip>
-          ) : (
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2.5 w-full rounded-md px-2.5 py-1.5 text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
-            >
-              <LogOut className="h-4 w-4 shrink-0" />
-              <span>Sign out</span>
-            </button>
           )}
         </div>
       </aside>

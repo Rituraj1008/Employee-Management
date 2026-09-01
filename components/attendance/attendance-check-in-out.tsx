@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Clock, LogIn, LogOut, Coffee, UtensilsCrossed } from "lucide-react";
 import { formatTime, formatWorkingHours } from "@/lib/utils/date";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface AttendanceRecord {
   id: string;
@@ -30,10 +32,11 @@ function fmt(secs: number) {
 }
 
 export function AttendanceCheckInOut({ employeeId, initialAttendance }: AttendanceCheckInOutProps) {
-  const [attendance,  setAttendance]  = useState(initialAttendance);
-  const [localTea,   setLocalTea]    = useState(false);
-  const [localLunch, setLocalLunch]  = useState(false);
-  const [pending,    setPending]     = useState(false);
+  const [attendance,   setAttendance]  = useState(initialAttendance);
+  const [localTea,    setLocalTea]    = useState(false);
+  const [localLunch,  setLocalLunch]  = useState(false);
+  const [pending,     setPending]     = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   // Countdown state: null = not running, 0 = finished, >0 = seconds remaining
   const [teaSecs,   setTeaSecs]   = useState<number | null>(null);
@@ -291,7 +294,10 @@ export function AttendanceCheckInOut({ employeeId, initialAttendance }: Attendan
         {/* Check Out */}
         <button
           type="button"
-          onClick={handleCheckOut}
+          onClick={() => {
+            if (!hasCheckedIn || hasCheckedOut) { handleCheckOut(); return; }
+            setConfirmOpen(true);
+          }}
           disabled={pending}
           className={cn(
             "flex flex-col items-center justify-center gap-1.5 rounded-lg border py-3 px-2 text-center transition-all",
@@ -308,6 +314,42 @@ export function AttendanceCheckInOut({ employeeId, initialAttendance }: Attendan
         </button>
 
       </div>
+
+      {/* Check-out confirmation */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Confirm Check Out</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to check out? This will end your workday and
+            cannot be undone.
+          </p>
+          {attendance?.checkInTime && (
+            <div className="rounded-lg bg-muted/50 px-4 py-3 text-sm">
+              <span className="text-muted-foreground">Checked in at </span>
+              <span className="font-medium text-foreground">
+                {formatTime(attendance.checkInTime)}
+              </span>
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={pending}
+              onClick={async () => {
+                setConfirmOpen(false);
+                await handleCheckOut();
+              }}
+            >
+              {pending ? "Checking out…" : "Yes, Check Out"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

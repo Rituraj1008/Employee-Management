@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Attendance" };
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; date?: string }>;
+  searchParams: Promise<{ page?: string; date?: string; view?: string }>;
 }) {
   const session = await requireAuth();
   const params = await searchParams;
@@ -76,7 +76,67 @@ export default async function Page({
     );
   }
 
-  /* ── Employee / HR / Manager view: own attendance ── */
+  /* ── HR view: company attendance (default) or own attendance ── */
+  if (session.role === RoleType.HR) {
+    if (params.view !== "mine") {
+      // Company view — same data as admin but with HR tabs
+      const dateStr = params.date ?? format(new Date(), "yyyy-MM-dd");
+      const attendanceDate = new Date(dateStr + "T00:00:00.000Z");
+
+      const employees = await prisma.employee.findMany({
+        where: { status: "ACTIVE" },
+        include: {
+          user: { select: { role: true } },
+          department: { select: { name: true } },
+          designation: { select: { name: true } },
+          attendance: { where: { date: attendanceDate }, take: 1 },
+        },
+        orderBy: [{ department: { name: "asc" } }, { firstName: "asc" }],
+      });
+
+      const departments = await prisma.department.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      });
+
+      const rows = employees.map((emp) => {
+        const att = emp.attendance[0] ?? null;
+        return {
+          employeeId: emp.id,
+          employeeCode: emp.employeeCode,
+          firstName: emp.firstName,
+          lastName: emp.lastName,
+          department: emp.department?.name ?? null,
+          designation: emp.designation?.name ?? null,
+          attendance: att
+            ? {
+                id: att.id,
+                checkInTime: att.checkInTime?.toISOString() ?? null,
+                checkOutTime: att.checkOutTime?.toISOString() ?? null,
+                workingMinutes: att.workingMinutes,
+                teaBreakMinutes: att.teaBreakMinutes,
+                lunchBreakMinutes: att.lunchBreakMinutes,
+                status: att.status,
+              }
+            : null,
+        };
+      });
+
+      return (
+        <AdminAttendancePage
+          rows={rows}
+          date={dateStr}
+          departments={departments}
+          isHr
+        />
+      );
+    }
+
+    // "My Attendance" tab — fall through to personal view below
+  }
+
+  /* ── Employee / Manager / HR (mine) view: own attendance ── */
   if (!session.employeeId) {
     return (
       <div className="p-6">
@@ -104,6 +164,7 @@ export default async function Page({
       page={page}
       totalPages={data.totalPages}
       employeeId={session.employeeId}
+      isHr={session.role === RoleType.HR}
     />
   );
 }

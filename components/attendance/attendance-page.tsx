@@ -6,6 +6,7 @@ import { AttendanceCheckInOut } from "./attendance-check-in-out";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Coffee, UtensilsCrossed } from "lucide-react";
+import { HrAttendanceTabs } from "./hr-attendance-tabs";
 
 interface AttendanceRecord {
   id: string;
@@ -24,6 +25,7 @@ interface AttendancePageProps {
   page: number;
   totalPages: number;
   employeeId: string;
+  isHr?: boolean;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -33,7 +35,7 @@ const STATUS_COLORS: Record<string, string> = {
   ON_LEAVE: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900",
 };
 
-export function AttendancePage({ records, total, page, totalPages, employeeId }: AttendancePageProps) {
+export function AttendancePage({ records, total, page, totalPages, employeeId, isHr }: AttendancePageProps) {
   const router = useRouter();
   const today   = records[0];
   const isToday = today && formatDate(today.date) === formatDate(new Date());
@@ -52,14 +54,18 @@ export function AttendancePage({ records, total, page, totalPages, employeeId }:
   function goToPage(p: number) {
     const params = new URLSearchParams();
     params.set("page", String(p));
+    if (isHr) params.set("view", "mine");
     router.push(`/attendance?${params.toString()}`);
   }
 
   return (
     <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
-      <div>
-        <h2 className="text-base font-semibold">Attendance</h2>
-        <p className="text-sm text-muted-foreground">{total} records total</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="text-base font-semibold">My Attendance</h2>
+          <p className="text-sm text-muted-foreground">{total} records total</p>
+        </div>
+        {isHr && <HrAttendanceTabs active="mine" />}
       </div>
 
       <AttendanceCheckInOut employeeId={employeeId} initialAttendance={todayAttendance} />

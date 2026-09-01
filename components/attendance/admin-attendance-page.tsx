@@ -22,6 +22,7 @@ import {
   CalendarOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HrAttendanceTabs } from "./hr-attendance-tabs";
 
 /* ── Types ──────────────────────────────────────────────────────────────────── */
 
@@ -47,6 +48,7 @@ interface AdminAttendancePageProps {
   rows: EmployeeAttendanceRow[];
   date: string; // "yyyy-MM-dd"
   departments: { id: string; name: string }[];
+  isHr?: boolean;
 }
 
 /* ── Constants ───────────────────────────────────────────────────────────────── */
@@ -71,7 +73,7 @@ function shiftDate(dateStr: string, days: number): string {
 
 /* ── Component ───────────────────────────────────────────────────────────────── */
 
-export function AdminAttendancePage({ rows, date, departments }: AdminAttendancePageProps) {
+export function AdminAttendancePage({ rows, date, departments, isHr }: AdminAttendancePageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
@@ -186,11 +188,14 @@ export function AdminAttendancePage({ rows, date, departments }: AdminAttendance
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
 
       {/* ── Header ── */}
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">Attendance Monitor</h2>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          View and update every employee's attendance
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Attendance Monitor</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            View and update every employee's attendance
+          </p>
+        </div>
+        {isHr && <HrAttendanceTabs active="company" />}
       </div>
 
       {/* ── Date navigation ── */}

@@ -41,11 +41,13 @@ export function LandingNavbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-              W
+          <Link href="/" className="flex items-center gap-2 shrink-0 group">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 shadow-md shadow-violet-500/30 shrink-0 group-hover:shadow-lg group-hover:shadow-violet-500/40 transition-shadow duration-200">
+              <span className="font-black text-white text-sm select-none">E</span>
             </div>
-            <span className="font-semibold text-foreground tracking-tight">WorkForce</span>
+            <span className="font-bold tracking-tight text-[15px] bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400 bg-clip-text text-transparent">
+              Emplyra
+            </span>
           </Link>
 
           {/* Desktop nav */}

@@ -193,18 +193,18 @@
 /* ─── Utility Classes ─────────────────────────────────────────────────────── */
 
 @layer utilities {
-  /* Landing page gradient text */
+  /* Landing hero gradient text */
   .text-gradient {
-    background: linear-gradient(135deg, var(--primary) 0%, oklch(0.65 0.18 220) 100%);
+    background: linear-gradient(125deg, oklch(0.72 0.18 258) 0%, oklch(0.68 0.22 290) 45%, oklch(0.74 0.16 220) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Glass card effect for landing */
+  /* Glass card effect */
   .glass-card {
     background: oklch(1 0 0 / 60%);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
     border: 1px solid oklch(0.9 0.007 240 / 60%);
   }
   .dark .glass-card {
@@ -225,5 +225,78 @@
   .stat-number {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
+  }
+
+  /* Landing — noise grain overlay */
+  .noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.028;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    z-index: 0;
+  }
+
+  /* Feature card glow on hover */
+  .feature-card {
+    position: relative;
+    transition: box-shadow 0.25s, border-color 0.25s, transform 0.25s;
+  }
+  .feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 1px oklch(0.50 0.20 258 / 20%), 0 8px 32px oklch(0.50 0.20 258 / 10%);
+  }
+
+  /* Glow ring for primary elements */
+  .glow-ring {
+    box-shadow: 0 0 0 1px oklch(0.50 0.20 258 / 30%), 0 0 24px oklch(0.50 0.20 258 / 15%);
+  }
+
+  /* Gradient border card */
+  .gradient-border {
+    position: relative;
+    background: var(--card);
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, oklch(0.50 0.20 258 / 40%), oklch(0.60 0.18 290 / 20%), oklch(0.50 0.20 258 / 5%));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Float animation */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+  .animate-float { animation: float 6s ease-in-out infinite; }
+  .animate-float-slow { animation: float 8s ease-in-out infinite; animation-delay: 1s; }
+
+  /* Hero orb pulse */
+  @keyframes pulse-orb {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.05); }
+  }
+  .animate-orb { animation: pulse-orb 8s ease-in-out infinite; }
+  .animate-orb-slow { animation: pulse-orb 12s ease-in-out infinite; animation-delay: 2s; }
+
+  /* Shimmer on CTA button */
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .btn-shimmer {
+    background: linear-gradient(105deg, var(--primary) 0%, oklch(0.62 0.22 280) 50%, var(--primary) 100%);
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
   }
 }
