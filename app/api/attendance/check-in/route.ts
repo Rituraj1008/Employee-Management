@@ -8,7 +8,13 @@ export async function POST(request: NextRequest) {
     const session = await getSession();
     if (!session || !session.employeeId) return unauthorizedResponse();
 
-    const record = await checkIn(session.employeeId);
+    const body = await request.json().catch(() => ({}));
+    const breaks = {
+      teaBreakMinutes:   body.teaBreakMinutes   ?? 0,
+      lunchBreakMinutes: body.lunchBreakMinutes  ?? 0,
+    };
+
+    const record = await checkIn(session.employeeId, breaks);
     return successResponse(record);
   } catch (err) {
     if (err instanceof Error) return errorResponse(err.message);

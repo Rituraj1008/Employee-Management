@@ -1,27 +1,25 @@
 import { prisma } from "@/lib/prisma";
-import { calcWorkingMinutes } from "@/lib/utils/date";
+import { calcWorkingMinutes, getTodayDate } from "@/lib/utils/date";
 import { format } from "date-fns";
 
 export async function getTodayAttendance(employeeId: string) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
+  const today = getTodayDate();
   return prisma.attendance.findUnique({
     where: { employeeId_date: { employeeId, date: today } },
   });
 }
 
-export async function checkIn(employeeId: string) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+export async function checkIn(
+  employeeId: string,
+  breaks?: { teaBreakMinutes?: number; lunchBreakMinutes?: number }
+) {
+  const today = getTodayDate();
 
   const existing = await prisma.attendance.findUnique({
     where: { employeeId_date: { employeeId, date: today } },
   });
 
-  if (existing) {
-    if (existing.checkInTime) throw new Error("Already checked in for today");
-  }
+  if (existing?.checkInTime) throw new Error("Already checked in for today");
 
   return prisma.attendance.upsert({
     where: { employeeId_date: { employeeId, date: today } },
@@ -29,18 +27,21 @@ export async function checkIn(employeeId: string) {
       employeeId,
       date: today,
       checkInTime: new Date(),
+      teaBreakMinutes:   breaks?.teaBreakMinutes   ?? 0,
+      lunchBreakMinutes: breaks?.lunchBreakMinutes  ?? 0,
       status: "PRESENT",
     },
     update: {
       checkInTime: new Date(),
+      teaBreakMinutes:   breaks?.teaBreakMinutes   ?? 0,
+      lunchBreakMinutes: breaks?.lunchBreakMinutes  ?? 0,
       status: "PRESENT",
     },
   });
 }
 
 export async function checkOut(employeeId: string) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = getTodayDate();
 
   const attendance = await prisma.attendance.findUnique({
     where: { employeeId_date: { employeeId, date: today } },
@@ -54,14 +55,32 @@ export async function checkOut(employeeId: string) {
   }
 
   const checkOutTime = new Date();
-  const workingMinutes = calcWorkingMinutes(attendance.checkInTime, checkOutTime);
+  const grossMinutes = calcWorkingMinutes(attendance.checkInTime, checkOutTime);
+  const breakMinutes = (attendance.teaBreakMinutes ?? 0) + (attendance.lunchBreakMinutes ?? 0);
+  const workingMinutes = Math.max(0, grossMinutes - breakMinutes);
 
   return prisma.attendance.update({
     where: { id: attendance.id },
-    data: {
-      checkOutTime,
-      workingMinutes,
-    },
+    data: { checkOutTime, workingMinutes },
+  });
+}
+
+export async function logBreak(employeeId: string, type: "tea" | "lunch", taken: boolean) {
+  const today = getTodayDate();
+
+  const attendance = await prisma.attendance.findUnique({
+    where: { employeeId_date: { employeeId, date: today } },
+  });
+
+  if (!attendance || !attendance.checkInTime) throw new Error("No check-in found for today");
+  if (attendance.checkOutTime) throw new Error("Cannot change breaks after check-out");
+
+  const minutes = type === "tea" ? 15 : 45;
+  const field   = type === "tea" ? "teaBreakMinutes" : "lunchBreakMinutes";
+
+  return prisma.attendance.update({
+    where: { id: attendance.id },
+    data: { [field]: taken ? minutes : 0 },
   });
 }
 
@@ -85,8 +104,8 @@ export async function getAttendanceHistory(
 }
 
 export async function getAttendanceSummary(date?: Date) {
-  const targetDate = date || new Date();
-  targetDate.setHours(0, 0, 0, 0);
+  const targetDate = date ? new Date(date) : getTodayDate();
+  targetDate.setUTCHours(0, 0, 0, 0);
 
   const [presentCount, totalActive] = await Promise.all([
     prisma.attendance.count({
@@ -103,7 +122,7 @@ export async function getAttendanceSummary(date?: Date) {
 
 export async function getAllAttendanceForDate(date: Date) {
   const targetDate = new Date(date);
-  targetDate.setHours(0, 0, 0, 0);
+  targetDate.setUTCHours(0, 0, 0, 0);
 
   return prisma.attendance.findMany({
     where: { date: targetDate },

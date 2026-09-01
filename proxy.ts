@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth/session";
 
-const PUBLIC_PATHS = ["/login", "/api/auth/login"];
+const PUBLIC_PATHS = ["/", "/login", "/api/auth/login"];
 const API_AUTH_PREFIX = "/api/auth";
 
 export async function proxy(request: NextRequest) {

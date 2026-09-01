@@ -1,50 +1,125 @@
 import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth/guards";
 import { RoleType } from "@prisma/client";
-import { listTasks } from "@/services/task.service";
 import { prisma } from "@/lib/prisma";
 import { TasksPage } from "@/components/tasks/tasks-page";
+import { getTaskStats } from "@/services/task.service";
 
 export const metadata: Metadata = { title: "Tasks" };
 
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; priority?: string; page?: string }>;
+  searchParams: Promise<{ status?: string; priority?: string; page?: string; assigneeRole?: string; search?: string }>;
 }) {
   const session = await requireAuth();
   const params = await searchParams;
   const page = parseInt(params.page || "1", 10);
+  const limit = 15;
 
-  const canManage =
-    session.role === RoleType.SUPER_ADMIN ||
-    session.role === RoleType.HR ||
-    session.role === RoleType.MANAGER;
+  const isSuperAdmin = session.role === RoleType.SUPER_ADMIN;
+  const isHR = session.role === RoleType.HR;
+  const isManager = session.role === RoleType.MANAGER;
+  const canManage = isSuperAdmin || isHR || isManager;
 
-  const [data, assignableUsers] = await Promise.all([
-    listTasks({
-      assignedToId: canManage ? undefined : session.userId,
-      status: params.status as "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "COMPLETED" | undefined,
-      priority: params.priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT" | undefined,
-      page,
-      limit: 20,
-    }),
-    canManage
-      ? prisma.user.findMany({
-          where: { employee: { status: "ACTIVE" } },
+  // Build task query filters
+  const where: import("@prisma/client").Prisma.TaskWhereInput = {};
+
+  // Non-managers only see their own tasks unless they can manage
+  if (!canManage) {
+    where.assignedToId = session.userId;
+  }
+
+  // Managers only see tasks they created or are assigned to their dept employees
+  if (isManager && session.employeeId) {
+    const managedDepts = await prisma.department.findMany({
+      where: { managerId: session.employeeId, isActive: true },
+      select: { id: true },
+    });
+    const deptIds = managedDepts.map((d) => d.id);
+    where.OR = [
+      { createdById: session.userId },
+      { assignedTo: { employee: { departmentId: { in: deptIds } } } },
+    ];
+  }
+
+  if (params.status && params.status !== "all") {
+    where.status = params.status as import("@prisma/client").TaskStatus;
+  }
+  if (params.priority && params.priority !== "all") {
+    where.priority = params.priority as import("@prisma/client").TaskPriority;
+  }
+  if (params.assigneeRole && params.assigneeRole !== "all") {
+    where.assignedTo = { role: params.assigneeRole as RoleType };
+  }
+  if (params.search) {
+    where.title = { contains: params.search, mode: "insensitive" };
+  }
+
+  const [tasks, total, stats, assignableUsers] = await Promise.all([
+    prisma.task.findMany({
+      where,
+      include: {
+        createdBy: {
           select: {
             id: true,
             email: true,
+            role: true,
             employee: { select: { firstName: true, lastName: true } },
           },
-          orderBy: { email: "asc" },
+        },
+        assignedTo: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            employee: {
+              select: {
+                firstName: true,
+                lastName: true,
+                department: { select: { name: true } },
+              },
+            },
+          },
+        },
+        _count: { select: { comments: true } },
+      },
+      orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.task.count({ where }),
+    canManage ? getTaskStats() : Promise.resolve(null),
+    canManage
+      ? prisma.user.findMany({
+          where: {
+            ...(isSuperAdmin
+              ? { role: { in: [RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] } }
+              : isHR
+              ? { role: { in: [RoleType.MANAGER, RoleType.EMPLOYEE] } }
+              : {}), // managers: handled separately
+            employee: { status: "ACTIVE" },
+          },
+          select: {
+            id: true,
+            role: true,
+            employee: {
+              select: {
+                firstName: true,
+                lastName: true,
+                department: { select: { name: true } },
+                designation: { select: { name: true } },
+              },
+            },
+          },
+          orderBy: [{ role: "asc" }],
         })
       : Promise.resolve([]),
   ]);
 
   return (
     <TasksPage
-      tasks={data.tasks.map((t) => ({
+      tasks={tasks.map((t) => ({
         id: t.id,
         title: t.title,
         description: t.description,
@@ -52,23 +127,36 @@ export default async function Page({
         priority: t.priority,
         dueDate: t.dueDate?.toISOString() ?? null,
         createdAt: t.createdAt.toISOString(),
-        createdBy: t.createdBy.employee
-          ? { name: `${t.createdBy.employee.firstName} ${t.createdBy.employee.lastName}` }
-          : { name: t.createdBy.email },
-        assignedTo: t.assignedTo?.employee
-          ? { name: `${t.assignedTo.employee.firstName} ${t.assignedTo.employee.lastName}` }
-          : t.assignedTo
-          ? { name: t.assignedTo.email }
+        createdBy: {
+          name: t.createdBy.employee
+            ? `${t.createdBy.employee.firstName} ${t.createdBy.employee.lastName}`
+            : t.createdBy.email,
+        },
+        assignedTo: t.assignedTo
+          ? {
+              name: t.assignedTo.employee
+                ? `${t.assignedTo.employee.firstName} ${t.assignedTo.employee.lastName}`
+                : t.assignedTo.email,
+              role: t.assignedTo.role,
+              department: t.assignedTo.employee?.department?.name ?? null,
+            }
           : null,
         commentCount: t._count.comments,
       }))}
-      total={data.total}
+      total={total}
       page={page}
-      totalPages={data.totalPages}
+      totalPages={Math.ceil(total / limit)}
       canManage={canManage}
+      isSuperAdmin={isSuperAdmin}
+      stats={stats}
       assignableUsers={assignableUsers.map((u) => ({
         id: u.id,
-        name: u.employee ? `${u.employee.firstName} ${u.employee.lastName}` : u.email,
+        name: u.employee
+          ? `${u.employee.firstName} ${u.employee.lastName}`
+          : "Unknown",
+        role: u.role,
+        department: u.employee?.department?.name ?? null,
+        designation: u.employee?.designation?.name ?? null,
       }))}
     />
   );

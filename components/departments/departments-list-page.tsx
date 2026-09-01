@@ -87,7 +87,7 @@ export function DepartmentsListPage({ departments }: DepartmentsListPageProps) {
                 <h3 className="font-medium text-sm">{dept.name}</h3>
                 <Badge
                   variant="outline"
-                  className={`text-xs ${dept.isActive ? "bg-green-50 text-green-700 border-green-200" : "bg-zinc-50 text-zinc-500 border-zinc-200"}`}
+                  className={`text-xs ${dept.isActive ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900" : "bg-zinc-50 text-zinc-500 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"}`}
                 >
                   {dept.isActive ? "Active" : "Inactive"}
                 </Badge>

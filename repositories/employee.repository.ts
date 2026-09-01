@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { EmployeeStatus, Prisma } from "@prisma/client";
+import { EmployeeStatus, Prisma, RoleType } from "@prisma/client";
 
 export interface EmployeeFilters {
   search?: string;
   departmentId?: string;
   status?: EmployeeStatus;
+  role?: RoleType;
   page?: number;
   limit?: number;
 }
@@ -27,7 +28,7 @@ const employeeSelect = {
 export type EmployeeRow = Prisma.EmployeeGetPayload<{ select: typeof employeeSelect }>;
 
 export async function findEmployees(filters: EmployeeFilters) {
-  const { search, departmentId, status, page = 1, limit = 20 } = filters;
+  const { search, departmentId, status, role, page = 1, limit = 20 } = filters;
 
   const where: Prisma.EmployeeWhereInput = {};
 
@@ -41,6 +42,7 @@ export async function findEmployees(filters: EmployeeFilters) {
   }
   if (departmentId) where.departmentId = departmentId;
   if (status) where.status = status;
+  if (role) where.user = { role };
 
   const [employees, total] = await Promise.all([
     prisma.employee.findMany({

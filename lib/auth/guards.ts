@@ -41,9 +41,5 @@ export function canManageTasks(role: RoleType): boolean {
 }
 
 export function canApproveLeave(role: RoleType): boolean {
-  return (
-    role === RoleType.SUPER_ADMIN ||
-    role === RoleType.HR ||
-    role === RoleType.MANAGER
-  );
+  return role === RoleType.SUPER_ADMIN || role === RoleType.HR;
 }

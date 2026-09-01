@@ -10,16 +10,19 @@ export const metadata: Metadata = { title: "Employees" };
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; department?: string; status?: string; page?: string }>;
+  searchParams: Promise<{ search?: string; department?: string; status?: string; role?: string; page?: string }>;
 }) {
-  await requireRole([RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER]);
+  const session = await requireRole([RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER]);
   const params = await searchParams;
+
+  const isAdmin = session.role === RoleType.SUPER_ADMIN || session.role === RoleType.HR;
 
   const [data, departments] = await Promise.all([
     listEmployees({
       search: params.search,
       departmentId: params.department,
       status: params.status as "ACTIVE" | "INACTIVE" | undefined,
+      role: isAdmin ? (params.role as RoleType | undefined) : undefined,
       page: parseInt(params.page || "1", 10),
       limit: 20,
     }),
@@ -48,6 +51,7 @@ export default async function Page({
       page={data.page}
       totalPages={data.totalPages}
       departments={departments}
+      isAdmin={isAdmin}
     />
   );
 }

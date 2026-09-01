@@ -132,18 +132,32 @@ export async function cancelLeaveRequest(requestId: string, employeeId: string) 
 
 export async function listLeaveRequests(options: {
   employeeId?: string;
+  excludeRoles?: import("@prisma/client").RoleType[];
   status?: LeaveStatus;
   page?: number;
   limit?: number;
 }) {
-  const { employeeId, status, page = 1, limit = 20 } = options;
-  const where = { ...(employeeId ? { employeeId } : {}), ...(status ? { status } : {}) };
+  const { employeeId, excludeRoles, status, page = 1, limit = 20 } = options;
+
+  const where: import("@prisma/client").Prisma.LeaveRequestWhereInput = {};
+  if (employeeId) where.employeeId = employeeId;
+  if (status) where.status = status;
+  if (excludeRoles?.length) {
+    where.employee = { user: { role: { notIn: excludeRoles } } };
+  }
 
   const [requests, total] = await Promise.all([
     prisma.leaveRequest.findMany({
       where,
       include: {
-        employee: { select: { id: true, firstName: true, lastName: true } },
+        employee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            user: { select: { role: true } },
+          },
+        },
         leaveType: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: "desc" },

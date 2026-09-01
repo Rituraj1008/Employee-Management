@@ -5,8 +5,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Department {
   id: string;
@@ -27,6 +29,22 @@ export function CreateEmployeeDialog({
   onSuccess,
 }: CreateEmployeeDialogProps) {
   const [pending, setPending] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("EMPLOYEE");
+  const [managedDeptIds, setManagedDeptIds] = useState<string[]>([]);
+
+  function toggleDept(id: string) {
+    setManagedDeptIds((prev) =>
+      prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
+    );
+  }
+
+  function handleClose(open: boolean) {
+    if (!open) {
+      setSelectedRole("EMPLOYEE");
+      setManagedDeptIds([]);
+    }
+    onOpenChange(open);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -46,8 +64,24 @@ export function CreateEmployeeDialog({
         toast.error(data.error || "Failed to create employee");
         return;
       }
+
+      const newEmployeeId: string = data.data?.id;
+
+      // If creating a manager and departments selected, assign them
+      if (selectedRole === "MANAGER" && managedDeptIds.length > 0 && newEmployeeId) {
+        await Promise.all(
+          managedDeptIds.map((deptId) =>
+            fetch(`/api/departments/${deptId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ managerId: newEmployeeId }),
+            })
+          )
+        );
+      }
+
       toast.success("Employee created");
-      onOpenChange(false);
+      handleClose(false);
       onSuccess();
     } catch {
       toast.error("Network error");
@@ -56,8 +90,10 @@ export function CreateEmployeeDialog({
     }
   }
 
+  const isManager = selectedRole === "MANAGER";
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Add Employee</DialogTitle>
@@ -107,7 +143,14 @@ export function CreateEmployeeDialog({
             </div>
             <div className="space-y-1.5">
               <Label>Role</Label>
-              <Select name="role" defaultValue="EMPLOYEE">
+              <Select
+                name="role"
+                defaultValue="EMPLOYEE"
+                onValueChange={(v) => {
+                  setSelectedRole(v);
+                  setManagedDeptIds([]);
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -120,8 +163,43 @@ export function CreateEmployeeDialog({
               </Select>
             </div>
           </div>
+
+          {/* Manager department assignment */}
+          {isManager && departments.length > 0 && (
+            <div className="space-y-2">
+              <Label>
+                Manages Departments
+                <span className="text-muted-foreground font-normal ml-1 text-xs">(select one or more)</span>
+              </Label>
+              <ScrollArea className="h-36 rounded-md border p-3">
+                <div className="space-y-2">
+                  {departments.map((d) => (
+                    <div key={d.id} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`dept-${d.id}`}
+                        checked={managedDeptIds.includes(d.id)}
+                        onCheckedChange={() => toggleDept(d.id)}
+                      />
+                      <label
+                        htmlFor={`dept-${d.id}`}
+                        className="text-sm cursor-pointer select-none"
+                      >
+                        {d.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+              {managedDeptIds.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {managedDeptIds.length} department{managedDeptIds.length > 1 ? "s" : ""} selected
+                </p>
+              )}
+            </div>
+          )}
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleClose(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={pending}>

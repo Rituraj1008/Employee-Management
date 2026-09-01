@@ -13,7 +13,7 @@ import {
   CheckSquare,
   Menu,
   LogOut,
-  X,
+  UsersRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -22,13 +22,21 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
-  { label: "Employees", href: "/employees", icon: Users, roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER] },
-  { label: "Departments", href: "/departments", icon: Building2, roles: [RoleType.SUPER_ADMIN, RoleType.HR] },
-  { label: "Attendance", href: "/attendance", icon: Clock, roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
-  { label: "Leaves", href: "/leaves", icon: CalendarOff, roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
-  { label: "Tasks", href: "/tasks", icon: CheckSquare, roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
+  { label: "Dashboard",   href: "/dashboard",   icon: LayoutDashboard, roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
+  { label: "Employees",   href: "/employees",   icon: Users,           roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER] },
+  { label: "Departments", href: "/departments", icon: Building2,       roles: [RoleType.SUPER_ADMIN, RoleType.HR] },
+  { label: "Teams",       href: "/teams",       icon: UsersRound,      roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER] },
+  { label: "Attendance",  href: "/attendance",  icon: Clock,           roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
+  { label: "Leaves",      href: "/leaves",      icon: CalendarOff,     roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
+  { label: "Tasks",       href: "/tasks",        icon: CheckSquare,     roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE] },
 ];
+
+const ROLE_BADGE: Record<RoleType, { label: string; cls: string }> = {
+  SUPER_ADMIN: { label: "Admin",    cls: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400" },
+  HR:          { label: "HR",       cls: "bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-400" },
+  MANAGER:     { label: "Manager",  cls: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400" },
+  EMPLOYEE:    { label: "Employee", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400" },
+};
 
 interface MobileNavProps {
   role: RoleType;
@@ -41,6 +49,13 @@ export function MobileNav({ role, userName }: MobileNavProps) {
   const router = useRouter();
 
   const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(role));
+  const badge = ROLE_BADGE[role];
+  const initials = userName
+    .split(" ")
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
 
   async function handleLogout() {
     setOpen(false);
@@ -63,12 +78,17 @@ export function MobileNav({ role, userName }: MobileNavProps) {
       </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-64 p-0">
-          <SheetHeader className="h-14 flex flex-row items-center justify-between px-4 border-b">
-            <SheetTitle className="text-sm font-semibold">Office Management</SheetTitle>
+        <SheetContent side="left" className="w-64 p-0 bg-sidebar text-sidebar-foreground">
+          <SheetHeader className="h-14 flex flex-row items-center gap-2.5 px-4 border-b border-sidebar-border">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xs shrink-0">
+              W
+            </div>
+            <SheetTitle className="text-sm font-semibold text-sidebar-foreground tracking-tight">
+              WorkForce
+            </SheetTitle>
           </SheetHeader>
 
-          <nav className="p-2 space-y-0.5">
+          <nav className="p-2 space-y-0.5 flex-1">
             {visibleItems.map((item) => {
               const active =
                 item.href === "/dashboard"
@@ -82,10 +102,10 @@ export function MobileNav({ role, userName }: MobileNavProps) {
                   href={item.href}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-md px-2 py-2 text-sm transition-colors",
+                    "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
                     active
-                      ? "bg-accent text-accent-foreground font-medium"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
@@ -95,13 +115,21 @@ export function MobileNav({ role, userName }: MobileNavProps) {
             })}
           </nav>
 
-          <div className="absolute bottom-0 left-0 right-0 border-t p-2">
-            <div className="px-2 py-1 mb-1">
-              <p className="text-xs font-medium">{userName}</p>
+          <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border p-3 space-y-1">
+            <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-md">
+              <div className="h-6 w-6 rounded-full bg-primary/15 text-primary text-xs font-semibold flex items-center justify-center shrink-0">
+                {initials}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-sidebar-foreground truncate">{userName}</p>
+                <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full", badge.cls)}>
+                  {badge.label}
+                </span>
+              </div>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              className="flex items-center gap-2.5 w-full rounded-md px-2.5 py-2 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
             >
               <LogOut className="h-4 w-4 shrink-0" />
               Sign out

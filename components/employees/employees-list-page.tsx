@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDate } from "@/lib/utils/date";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Users } from "lucide-react";
 import { CreateEmployeeDialog } from "./create-employee-dialog";
 import { RoleType } from "@prisma/client";
 
@@ -35,6 +35,7 @@ interface EmployeesListPageProps {
   page: number;
   totalPages: number;
   departments: Department[];
+  isAdmin: boolean;
 }
 
 const ROLE_LABELS: Record<RoleType, string> = {
@@ -50,6 +51,7 @@ export function EmployeesListPage({
   page,
   totalPages,
   departments,
+  isAdmin,
 }: EmployeesListPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -124,6 +126,23 @@ export function EmployeesListPage({
             <SelectItem value="INACTIVE">Inactive</SelectItem>
           </SelectContent>
         </Select>
+        {isAdmin && (
+          <Select
+            defaultValue={searchParams.get("role") || "all"}
+            onValueChange={(v) => updateSearch("role", v)}
+          >
+            <SelectTrigger className="h-8 text-sm w-auto min-w-32">
+              <SelectValue placeholder="Role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Roles</SelectItem>
+              <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+              <SelectItem value="HR">HR</SelectItem>
+              <SelectItem value="MANAGER">Manager</SelectItem>
+              <SelectItem value="EMPLOYEE">Employee</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* Table */}
@@ -143,8 +162,12 @@ export function EmployeesListPage({
             <tbody className="divide-y">
               {employees.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center text-muted-foreground py-12 px-4">
-                    No employees found
+                  <td colSpan={6} className="py-16 px-4">
+                    <div className="flex flex-col items-center gap-2">
+                      <Users className="h-10 w-10 text-muted-foreground/20" />
+                      <p className="text-sm font-medium text-muted-foreground">No employees found</p>
+                      <p className="text-xs text-muted-foreground/70">Try adjusting your search or filters</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -179,8 +202,8 @@ export function EmployeesListPage({
                         variant="outline"
                         className={`text-xs ${
                           emp.status === "ACTIVE"
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-zinc-50 text-zinc-500 border-zinc-200"
+                            ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900"
+                            : "bg-zinc-50 text-zinc-500 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
                         }`}
                       >
                         {emp.status.charAt(0) + emp.status.slice(1).toLowerCase()}

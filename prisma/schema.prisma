@@ -60,9 +60,9 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  employee     Employee?
-  createdTasks Task[]    @relation("TaskCreator")
-  assignedTasks Task[]   @relation("TaskAssignee")
+  employee      Employee?
+  createdTasks  Task[]    @relation("TaskCreator")
+  assignedTasks Task[]    @relation("TaskAssignee")
 
   @@map("users")
 }
@@ -77,9 +77,9 @@ model Department {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  managerId   String?  @map("manager_id")
-  manager     Employee? @relation("DepartmentManager", fields: [managerId], references: [id])
-  employees   Employee[] @relation("DepartmentEmployees")
+  managerId String?    @map("manager_id")
+  manager   Employee?  @relation("DepartmentManager", fields: [managerId], references: [id])
+  employees Employee[] @relation("DepartmentEmployees")
 
   @@map("departments")
 }
@@ -96,29 +96,33 @@ model Designation {
 }
 
 model Employee {
-  id            String         @id @default(uuid())
-  userId        String         @unique @map("user_id")
-  employeeCode  String         @unique @map("employee_code")
-  firstName     String         @map("first_name")
-  lastName      String         @map("last_name")
-  phone         String?
-  joiningDate   DateTime       @map("joining_date")
-  status        EmployeeStatus @default(ACTIVE)
-  profileImage  String?        @map("profile_image")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
+  id           String         @id @default(uuid())
+  userId       String         @unique @map("user_id")
+  employeeCode String         @unique @map("employee_code")
+  firstName    String         @map("first_name")
+  lastName     String         @map("last_name")
+  phone        String?
+  joiningDate  DateTime       @map("joining_date")
+  status       EmployeeStatus @default(ACTIVE)
+  profileImage String?        @map("profile_image")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  departmentId  String?        @map("department_id")
-  department    Department?    @relation("DepartmentEmployees", fields: [departmentId], references: [id])
-  designationId String?        @map("designation_id")
-  designation   Designation?   @relation(fields: [designationId], references: [id])
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  departmentId  String?      @map("department_id")
+  department    Department?  @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+  designationId String?      @map("designation_id")
+  designation   Designation? @relation(fields: [designationId], references: [id])
 
-  managedDept   Department[]   @relation("DepartmentManager")
-  attendance    Attendance[]
-  leaveRequests LeaveRequest[]
-  leaveBalances LeaveBalance[]
-  taskComments  TaskComment[]
+  managedDept     Department[]   @relation("DepartmentManager")
+  managedTeams    Team[]         @relation("TeamManager")
+  teamMemberships TeamMember[]
+  attendance      Attendance[]
+  leaveRequests   LeaveRequest[]
+  leaveBalances   LeaveBalance[]
+  taskComments    TaskComment[]
+  salary          EmployeeSalary?
+  salarySlips     SalarySlip[]
 
   @@index([userId])
   @@index([departmentId])
@@ -129,18 +133,20 @@ model Employee {
 // ─── Attendance ───────────────────────────────────────────────────────────────
 
 model Attendance {
-  id             String           @id @default(uuid())
-  employeeId     String           @map("employee_id")
-  date           DateTime         @db.Date @map("date")
-  checkInTime    DateTime?        @map("check_in_time")
-  checkOutTime   DateTime?        @map("check_out_time")
-  workingMinutes Int?             @map("working_minutes")
-  status         AttendanceStatus @default(PRESENT)
-  notes          String?
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
+  id                String           @id @default(uuid())
+  employeeId        String           @map("employee_id")
+  date              DateTime         @map("date") @db.Date
+  checkInTime       DateTime?        @map("check_in_time")
+  checkOutTime      DateTime?        @map("check_out_time")
+  workingMinutes    Int?             @map("working_minutes")
+  teaBreakMinutes   Int              @default(0) @map("tea_break_minutes")
+  lunchBreakMinutes Int              @default(0) @map("lunch_break_minutes")
+  status            AttendanceStatus @default(PRESENT)
+  notes             String?
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
 
-  employee       Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, date])
   @@index([employeeId])
@@ -151,13 +157,13 @@ model Attendance {
 // ─── Leave ────────────────────────────────────────────────────────────────────
 
 model LeaveType {
-  id           String   @id @default(uuid())
-  name         String   @unique
-  description  String?
-  daysPerYear  Int      @map("days_per_year")
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  daysPerYear Int      @map("days_per_year")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   leaveRequests LeaveRequest[]
   leaveBalances LeaveBalance[]
@@ -166,18 +172,18 @@ model LeaveType {
 }
 
 model LeaveBalance {
-  id           String    @id @default(uuid())
-  employeeId   String    @map("employee_id")
-  leaveTypeId  String    @map("leave_type_id")
-  year         Int
-  totalDays    Int       @map("total_days")
-  usedDays     Int       @default(0) @map("used_days")
+  id            String   @id @default(uuid())
+  employeeId    String   @map("employee_id")
+  leaveTypeId   String   @map("leave_type_id")
+  year          Int
+  totalDays     Int      @map("total_days")
+  usedDays      Int      @default(0) @map("used_days")
   remainingDays Int      @map("remaining_days")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-  employee     Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  leaveType    LeaveType @relation(fields: [leaveTypeId], references: [id])
+  employee  Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
 
   @@unique([employeeId, leaveTypeId, year])
   @@index([employeeId])
@@ -185,27 +191,58 @@ model LeaveBalance {
 }
 
 model LeaveRequest {
-  id           String      @id @default(uuid())
-  employeeId   String      @map("employee_id")
-  leaveTypeId  String      @map("leave_type_id")
-  startDate    DateTime    @db.Date @map("start_date")
-  endDate      DateTime    @db.Date @map("end_date")
-  totalDays    Int         @map("total_days")
-  reason       String
-  status       LeaveStatus @default(PENDING)
-  reviewedBy   String?     @map("reviewed_by")
-  reviewNote   String?     @map("review_note")
-  reviewedAt   DateTime?   @map("reviewed_at")
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
+  id          String      @id @default(uuid())
+  employeeId  String      @map("employee_id")
+  leaveTypeId String      @map("leave_type_id")
+  startDate   DateTime    @map("start_date") @db.Date
+  endDate     DateTime    @map("end_date") @db.Date
+  totalDays   Int         @map("total_days")
+  reason      String
+  status      LeaveStatus @default(PENDING)
+  reviewedBy  String?     @map("reviewed_by")
+  reviewNote  String?     @map("review_note")
+  reviewedAt  DateTime?   @map("reviewed_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
 
-  employee     Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  leaveType    LeaveType   @relation(fields: [leaveTypeId], references: [id])
+  employee  Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
 
   @@index([employeeId])
   @@index([status])
   @@index([startDate, endDate])
   @@map("leave_requests")
+}
+
+// ─── Teams ────────────────────────────────────────────────────────────────────
+
+model Team {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean      @default(true) @map("is_active")
+  managerId   String?      @map("manager_id")
+  manager     Employee?    @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
+  members     TeamMember[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  @@index([managerId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id         String   @id @default(uuid())
+  teamId     String   @map("team_id")
+  employeeId String   @map("employee_id")
+  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  joinedAt   DateTime @default(now()) @map("joined_at")
+
+  @@unique([teamId, employeeId])
+  @@index([teamId])
+  @@index([employeeId])
+  @@map("team_members")
 }
 
 // ─── Tasks ────────────────────────────────────────────────────────────────────
@@ -216,21 +253,63 @@ model Task {
   description  String?
   status       TaskStatus   @default(TODO)
   priority     TaskPriority @default(MEDIUM)
-  dueDate      DateTime?    @db.Date @map("due_date")
+  dueDate      DateTime?    @map("due_date") @db.Date
   createdById  String       @map("created_by_id")
   assignedToId String?      @map("assigned_to_id")
   createdAt    DateTime     @default(now()) @map("created_at")
   updatedAt    DateTime     @updatedAt @map("updated_at")
 
-  createdBy    User         @relation("TaskCreator", fields: [createdById], references: [id])
-  assignedTo   User?        @relation("TaskAssignee", fields: [assignedToId], references: [id])
-  comments     TaskComment[]
+  createdBy  User          @relation("TaskCreator", fields: [createdById], references: [id])
+  assignedTo User?         @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  comments   TaskComment[]
 
   @@index([status])
   @@index([priority])
   @@index([assignedToId])
   @@index([createdById])
   @@map("tasks")
+}
+
+// ─── Salary ───────────────────────────────────────────────────────────────────
+
+model EmployeeSalary {
+  id            String   @id @default(uuid())
+  employeeId    String   @unique @map("employee_id")
+  baseSalary    Decimal  @map("base_salary") @db.Decimal(14, 2)
+  effectiveFrom DateTime @default(now()) @map("effective_from") @db.Date
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_salaries")
+}
+
+model SalarySlip {
+  id              String   @id @default(uuid())
+  employeeId      String   @map("employee_id")
+  month           Int
+  year            Int
+  baseSalary      Decimal  @map("base_salary") @db.Decimal(14, 2)
+  workingDays     Int      @map("working_days")
+  presentDays     Int      @default(0) @map("present_days")
+  halfDays        Int      @default(0) @map("half_days")
+  absentDays      Int      @default(0) @map("absent_days")
+  paidLeaveDays   Int      @default(0) @map("paid_leave_days")
+  unpaidLeaveDays Int      @default(0) @map("unpaid_leave_days")
+  deductions      Decimal  @default(0) @db.Decimal(14, 2)
+  netSalary       Decimal  @map("net_salary") @db.Decimal(14, 2)
+  generatedById   String   @map("generated_by_id")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, month, year])
+  @@index([employeeId])
+  @@index([month, year])
+  @@map("salary_slips")
 }
 
 model TaskComment {
@@ -241,8 +320,8 @@ model TaskComment {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  employee   Employee @relation(fields: [employeeId], references: [id])
+  task     Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id])
 
   @@index([taskId])
   @@map("task_comments")

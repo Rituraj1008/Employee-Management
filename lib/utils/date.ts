@@ -32,6 +32,12 @@ export function getTodayDateString(): string {
   return format(new Date(), "yyyy-MM-dd");
 }
 
+// Returns a Date object for the start of today's LOCAL calendar date, stored
+// as UTC midnight so node-postgres writes the correct date to Postgres `date` columns.
+export function getTodayDate(): Date {
+  return new Date(format(new Date(), "yyyy-MM-dd") + "T00:00:00.000Z");
+}
+
 export function getDatesBetween(start: Date, end: Date): number {
   const diffTime = Math.abs(end.getTime() - start.getTime());
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
