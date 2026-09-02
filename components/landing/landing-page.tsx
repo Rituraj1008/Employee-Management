@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import {
   Users, Clock, CalendarOff, CheckSquare, Building2,
   UsersRound, BarChart3, Shield, ArrowRight,
-  TrendingUp, ClipboardList, UserCheck, Bell,
+  TrendingUp, UserCheck, Bell,
   Settings, Banknote, Zap, Globe, Lock,
+  GitBranch, X, Mail,
 } from "lucide-react";
 
 /* ─── Data ──────────────────────────────────────────────────────────────────── */
@@ -141,6 +142,77 @@ const STATS = [
   { value: "8+", label: "Core Modules", sub: "Employees, Leaves, Tasks, Salary…", color: "text-violet-500" },
   { value: "100%", label: "Web-Based", sub: "No install. Any device, anywhere.", color: "text-emerald-500" },
   { value: "∞", label: "Scalable", sub: "Grows with your team, always.", color: "text-amber-500" },
+];
+
+const ACTIVITY_FEED = [
+  {
+    icon: Clock,
+    action: "Sarah Chen checked in",
+    time: "Today, 09:02 AM",
+    status: "Present",
+    iconBg: "bg-emerald-500/15",
+    iconColor: "text-emerald-400",
+    statusBg: "bg-emerald-500/10",
+    statusColor: "text-emerald-400",
+    statusBorder: "border-emerald-500/20",
+  },
+  {
+    icon: CalendarOff,
+    action: "Alex Kumar — leave approved",
+    time: "Today, 09:15 AM",
+    status: "Approved",
+    iconBg: "bg-blue-500/15",
+    iconColor: "text-blue-400",
+    statusBg: "bg-blue-500/10",
+    statusColor: "text-blue-400",
+    statusBorder: "border-blue-500/20",
+  },
+  {
+    icon: CheckSquare,
+    action: "Design system review assigned",
+    time: "Today, 09:31 AM",
+    status: "Assigned",
+    iconBg: "bg-violet-500/15",
+    iconColor: "text-violet-400",
+    statusBg: "bg-violet-500/10",
+    statusColor: "text-violet-400",
+    statusBorder: "border-violet-500/20",
+  },
+  {
+    icon: Banknote,
+    action: "August salary slips generated",
+    time: "Today, 10:00 AM",
+    status: "Generated",
+    iconBg: "bg-teal-500/15",
+    iconColor: "text-teal-400",
+    statusBg: "bg-teal-500/10",
+    statusColor: "text-teal-400",
+    statusBorder: "border-teal-500/20",
+  },
+  {
+    icon: Users,
+    action: "Engineering team — 3 members added",
+    time: "Today, 10:14 AM",
+    status: "Updated",
+    iconBg: "bg-amber-500/15",
+    iconColor: "text-amber-400",
+    statusBg: "bg-amber-500/10",
+    statusColor: "text-amber-400",
+    statusBorder: "border-amber-500/20",
+  },
+];
+
+const TICKER_ITEMS = [
+  "Employee Management",
+  "Attendance Tracking",
+  "Leave Management",
+  "Task Assignment",
+  "Team Management",
+  "Salary & Payroll",
+  "Role-Based Access",
+  "Department Setup",
+  "Approval Workflows",
+  "HR Analytics",
 ];
 
 const WHY = [
@@ -314,75 +386,170 @@ export function LandingPage({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
       <LandingNavbar isLoggedIn={isLoggedIn} />
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <section className="relative pt-28 pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden noise">
-        {/* Background orbs */}
+      <section className="relative overflow-hidden noise">
+        {/* Background — single light source, top-right; dot grid for depth */}
         <div className="absolute inset-0 -z-10 pointer-events-none" aria-hidden="true">
-          <div className="absolute top-[-20%] left-[10%] w-[700px] h-[700px] rounded-full bg-primary/8 blur-[120px] animate-orb" />
-          <div className="absolute top-[10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-violet-500/6 blur-[100px] animate-orb-slow" />
-          <div className="absolute bottom-0 left-[30%] w-[400px] h-[300px] rounded-full bg-cyan-500/5 blur-[80px]" />
-          {/* Grid pattern */}
+          <div className="absolute -top-32 -right-32 w-[900px] h-[900px] rounded-full bg-primary/7 blur-[150px]" />
+          <div className="absolute bottom-0 -left-20 w-[500px] h-[500px] rounded-full bg-violet-500/5 blur-[100px]" />
           <div
-            className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04]"
+            className="absolute inset-0 opacity-[0.018] dark:opacity-[0.045]"
             style={{
-              backgroundImage: "linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)",
-              backgroundSize: "60px 60px",
+              backgroundImage: "radial-gradient(circle, var(--foreground) 1px, transparent 1px)",
+              backgroundSize: "28px 28px",
             }}
           />
         </div>
 
-        <div className="max-w-7xl mx-auto">
-          {/* Badge */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium border border-primary/20 bg-primary/5 text-primary backdrop-blur-sm">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
-              </span>
-              Built for modern HR teams · 8 core modules
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_460px] gap-14 xl:gap-20 items-center pt-32 pb-20 lg:pt-40 lg:pb-28">
+
+            {/* ── LEFT: Typography column ── */}
+            <div className="flex flex-col">
+
+              {/* Eyebrow — monospace with a hairline rule */}
+              <div className="flex items-center gap-3 mb-10 animate-in fade-in slide-in-from-left-4 duration-700 fill-mode-both">
+                <div className="h-px w-10 bg-primary/50 shrink-0" />
+                <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.22em]">
+                  Emplyra · Employee Management
+                </span>
+              </div>
+
+              {/* Headline — light/black weight contrast is the typographic signature */}
+              <h1 className="animate-in fade-in slide-in-from-left-4 duration-700 delay-100 fill-mode-both">
+                <span className="block text-[2.8rem] sm:text-6xl lg:text-[4rem] xl:text-[4.75rem] leading-[1.06] font-extralight tracking-tight text-foreground/60">
+                  The platform
+                </span>
+                <span className="block text-[2.8rem] sm:text-6xl lg:text-[4rem] xl:text-[4.75rem] leading-[1.06] font-extralight tracking-tight text-foreground/60">
+                  HR teams
+                </span>
+                <span className="block text-[2.8rem] sm:text-6xl lg:text-[4rem] xl:text-[4.75rem] leading-[1.06] font-black tracking-tight text-gradient">
+                  actually want.
+                </span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="mt-7 text-base sm:text-lg text-muted-foreground/75 leading-relaxed max-w-[360px] font-light animate-in fade-in slide-in-from-left-4 duration-700 delay-200 fill-mode-both">
+                Attendance, leaves, tasks, and payroll — all in one place.
+                No spreadsheets. No WhatsApp threads. Just clarity.
+              </p>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3 mt-10 animate-in fade-in slide-in-from-left-4 duration-700 delay-300 fill-mode-both">
+                <Button asChild size="lg" className="btn-shimmer h-12 px-8 text-sm font-semibold rounded-xl shadow-lg shadow-primary/25 border-0">
+                  <Link href="/login">
+                    Get started free
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" size="lg" className="h-12 px-8 text-sm rounded-xl text-muted-foreground hover:text-foreground">
+                  <Link href="#features">See all features</Link>
+                </Button>
+              </div>
+
+              {/* Trust row */}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-9 animate-in fade-in slide-in-from-left-4 duration-700 fill-mode-both" style={{ animationDelay: "420ms" }}>
+                {["No credit card needed", "4 roles built-in", "Setup in minutes"].map((item) => (
+                  <span key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span className="h-1 w-1 rounded-full bg-primary/60 shrink-0" />
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* ── RIGHT: Live activity feed — the signature element ── */}
+            <div className="relative animate-in fade-in slide-in-from-right-8 duration-700 delay-200 fill-mode-both">
+              {/* Ambient glow behind card */}
+              <div className="absolute -inset-6 rounded-3xl bg-primary/5 blur-3xl pointer-events-none" />
+
+              <div className="relative rounded-2xl border border-white/10 dark:border-white/[0.07] bg-zinc-950 overflow-hidden shadow-[0_32px_72px_-16px_rgba(0,0,0,0.6)]">
+
+                {/* Card header */}
+                <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.07]">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-6 w-6 rounded-lg bg-blue-600 flex items-center justify-center text-[9px] text-white font-black shadow-lg shadow-blue-600/40">
+                      E
+                    </div>
+                    <span className="text-[11px] font-semibold text-white/60 tracking-tight">Emplyra Workspace</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    </span>
+                    <span className="font-mono text-[10px] text-emerald-400 uppercase tracking-widest">Live</span>
+                  </div>
+                </div>
+
+                {/* Activity items */}
+                <div className="px-4 py-1 divide-y divide-white/[0.05]">
+                  {ACTIVITY_FEED.map((item, i) => {
+                    const Icon = item.icon;
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 py-3.5 animate-in fade-in slide-in-from-right-4 fill-mode-both"
+                        style={{ animationDuration: "500ms", animationDelay: `${380 + i * 110}ms` }}
+                      >
+                        <div className={`h-8 w-8 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}>
+                          <Icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-medium text-white/80 truncate">{item.action}</p>
+                          <p className="text-[10px] text-white/30 mt-0.5">{item.time}</p>
+                        </div>
+                        <div className={`shrink-0 text-[9px] font-semibold px-2 py-0.5 rounded-full border ${item.statusBg} ${item.statusColor} ${item.statusBorder}`}>
+                          {item.status}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* KPI strip */}
+                <div className="grid grid-cols-3 border-t border-white/[0.07] divide-x divide-white/[0.07]">
+                  {[
+                    { label: "Present", value: "98", color: "text-emerald-400" },
+                    { label: "On Leave", value: "12", color: "text-amber-400" },
+                    { label: "Tasks Due", value: "7", color: "text-violet-400" },
+                  ].map((kpi) => (
+                    <div key={kpi.label} className="flex flex-col items-center py-4">
+                      <span className={`text-xl font-black tabular-nums ${kpi.color}`}>{kpi.value}</span>
+                      <span className="text-[9px] text-white/25 mt-0.5 uppercase tracking-wider font-medium">{kpi.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Floating feature chips below card */}
+              <div
+                className="flex flex-wrap gap-2 mt-4 animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both"
+                style={{ animationDelay: "800ms" }}
+              >
+                {["Attendance", "Leave Mgmt", "Tasks", "Payroll", "Role Access"].map((chip) => (
+                  <span
+                    key={chip}
+                    className="text-[10px] font-medium px-3 py-1.5 rounded-full border border-border/60 text-muted-foreground bg-background/40 backdrop-blur-sm"
+                  >
+                    {chip}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Headline */}
-          <div className="text-center max-w-5xl mx-auto">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.06] text-foreground">
-              The employee platform
-              <br />
-              <span className="text-gradient">your team deserves.</span>
-            </h1>
-            <p className="mt-6 text-lg sm:text-xl text-muted-foreground/80 leading-relaxed max-w-2xl mx-auto font-light">
-              Employees, attendance, leave, tasks, salary, and teams — unified in one
-              precision-built platform. No bloat. No spreadsheets.
-            </p>
-          </div>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-10">
-            <Button asChild size="lg" className="btn-shimmer h-12 px-8 text-sm font-semibold rounded-xl shadow-lg shadow-primary/25 border-0">
-              <Link href="/login">
-                Get started free
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="h-12 px-8 text-sm rounded-xl border-border/60 backdrop-blur-sm hover:border-primary/30">
-              <Link href="#features">
-                See all features
-              </Link>
-            </Button>
-          </div>
-
-          {/* Trust */}
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8 text-xs text-muted-foreground">
-            {["No credit card needed", "4 roles built-in", "Setup in minutes", "Fully web-based"].map((item) => (
-              <span key={item} className="flex items-center gap-1.5">
-                <span className="h-1 w-1 rounded-full bg-primary/60" />
-                {item}
-              </span>
+        {/* ── Bottom ticker strip ── */}
+        <div className="border-t border-border/40 overflow-hidden bg-muted/5">
+          <div className="flex animate-marquee">
+            {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+              <div key={i} className="flex items-center gap-5 px-8 py-3.5 shrink-0">
+                <span className="h-1 w-1 rounded-full bg-primary/40 shrink-0" />
+                <span className="text-[11px] font-medium text-muted-foreground/60 whitespace-nowrap tracking-wide">
+                  {item}
+                </span>
+              </div>
             ))}
-          </div>
-
-          {/* Mockup */}
-          <div className="mt-20 max-w-5xl mx-auto animate-float-slow">
-            <DashboardMockup />
           </div>
         </div>
       </section>
@@ -601,34 +768,72 @@ export function LandingPage({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-border/50 bg-muted/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-lg shadow-primary/30">
+      <footer className="border-t border-border/60 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Main grid */}
+          <div className="py-16 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10">
+            {/* Brand — spans 2 cols */}
+            <div className="col-span-2">
+              <div className="flex items-center gap-2.5 mb-5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-sm">
                   E
                 </div>
-                <span className="font-bold text-foreground tracking-tight">Emplyra</span>
+                <span className="font-bold text-foreground tracking-tight text-base">Emplyra</span>
               </div>
-              <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
-                Modern employee management for teams of all sizes. Attendance, leaves, tasks, salary, and more in one place.
+              <p className="text-sm text-muted-foreground max-w-[260px] leading-relaxed mb-7">
+                Modern employee management for teams of all sizes. Attendance, leaves, tasks, salary — unified in one place.
               </p>
+              {/* Social icons */}
+              <div className="flex items-center gap-2">
+                {[
+                  { Icon: GitBranch, label: "GitHub" },
+                  { Icon: X, label: "Twitter" },
+                  { Icon: Globe, label: "LinkedIn" },
+                  { Icon: Mail, label: "Email" },
+                ].map(({ Icon, label }) => (
+                  <Link
+                    key={label}
+                    href="#"
+                    aria-label={label}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/70 text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                  </Link>
+                ))}
+              </div>
             </div>
 
+            {/* Link columns */}
             {[
-              { heading: "Product", links: ["Features", "Solutions", "Pricing", "Changelog"] },
-              { heading: "Company", links: ["About", "Blog", "Careers", "Contact"] },
-              { heading: "Legal", links: ["Privacy", "Terms", "Security", "Cookies"] },
+              {
+                heading: "Product",
+                links: ["Features", "Solutions", "Workflow", "Changelog", "Status"],
+              },
+              {
+                heading: "Resources",
+                links: ["Documentation", "API Reference", "Blog", "Support", "Community"],
+              },
+              {
+                heading: "Company",
+                links: ["About", "Careers", "Press", "Contact", "Partners"],
+                hrefs: { About: "/founder" },
+              },
+              {
+                heading: "Legal",
+                links: ["Privacy", "Terms", "Security", "Cookies", "Accessibility"],
+              },
             ].map((col) => (
               <div key={col.heading}>
-                <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground/70 mb-4">
+                <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground mb-4">
                   {col.heading}
                 </h4>
-                <ul className="space-y-2.5">
+                <ul className="space-y-3">
                   {col.links.map((link) => (
                     <li key={link}>
-                      <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      <Link
+                        href={"hrefs" in col && col.hrefs?.[link as keyof typeof col.hrefs] ? col.hrefs[link as keyof typeof col.hrefs] : "#"}
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
                         {link}
                       </Link>
                     </li>
@@ -638,13 +843,21 @@ export function LandingPage({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             ))}
           </div>
 
-          <div className="border-t border-border/50 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Bottom bar */}
+          <div className="border-t border-border/60 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} Emplyra. All rights reserved.
+              © {new Date().getFullYear()} Emplyra Inc. All rights reserved.
             </p>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <ClipboardList className="h-3 w-3 text-primary" />
-              Built for modern HR teams
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+              {["Privacy", "Terms of use", "Cookies", "Security", "Sitemap"].map((item) => (
+                <Link
+                  key={item}
+                  href="#"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {item}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

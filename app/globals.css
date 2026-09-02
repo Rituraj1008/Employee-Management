@@ -281,6 +281,19 @@
   .animate-float { animation: float 6s ease-in-out infinite; }
   .animate-float-slow { animation: float 8s ease-in-out infinite; animation-delay: 1s; }
 
+  /* Infinite marquee ticker */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 35s linear infinite;
+    will-change: transform;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee { animation: none; }
+  }
+
   /* Hero orb pulse */
   @keyframes pulse-orb {
     0%, 100% { opacity: 0.4; transform: scale(1); }
