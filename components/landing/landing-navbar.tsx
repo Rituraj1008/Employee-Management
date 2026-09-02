@@ -53,10 +53,10 @@ export function LandingNavbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) 
                 loaded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"
               )}
             >
-              <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 shadow-md shadow-violet-500/30 shrink-0 group-hover:shadow-lg group-hover:shadow-violet-500/40 transition-shadow duration-200">
+              <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-400 shadow-md shadow-orange-500/25 shrink-0 group-hover:shadow-lg group-hover:shadow-orange-500/35 transition-shadow duration-200">
                 <span className="font-black text-white text-sm select-none">E</span>
               </div>
-              <span className="font-bold tracking-tight text-[15px] bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400 bg-clip-text text-transparent">
+              <span className="font-bold tracking-tight text-[15px] bg-gradient-to-r from-orange-700 to-amber-600 dark:from-orange-400 dark:to-amber-300 bg-clip-text text-transparent">
                 Emplyra
               </span>
             </Link>
@@ -150,10 +150,10 @@ export function LandingNavbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) 
             className="flex items-center gap-2"
             onClick={() => setMobileOpen(false)}
           >
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 shadow-md shadow-violet-500/30">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-400 shadow-md shadow-orange-500/25">
               <span className="font-black text-white text-sm select-none">E</span>
             </div>
-            <span className="font-bold tracking-tight text-[15px] bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400 bg-clip-text text-transparent">
+            <span className="font-bold tracking-tight text-[15px] bg-gradient-to-r from-orange-700 to-amber-600 dark:from-orange-400 dark:to-amber-300 bg-clip-text text-transparent">
               Emplyra
             </span>
           </Link>

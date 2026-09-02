@@ -16,11 +16,11 @@ const FEATURES = [
     icon: Users,
     title: "Employee Management",
     description: "Centralized profiles, role assignments, department mapping, and full lifecycle management.",
-    gradient: "from-blue-500/20 to-blue-600/5",
-    iconColor: "text-blue-500",
-    iconBg: "bg-blue-500/10",
-    border: "hover:border-blue-500/30",
-    glow: "hover:shadow-blue-500/10",
+    gradient: "from-orange-500/20 to-orange-600/5",
+    iconColor: "text-orange-500",
+    iconBg: "bg-orange-500/10",
+    border: "hover:border-orange-500/30",
+    glow: "hover:shadow-orange-500/10",
   },
   {
     icon: Clock,
@@ -46,11 +46,11 @@ const FEATURES = [
     icon: CheckSquare,
     title: "Task Management",
     description: "Assign tasks with priorities, track progress across statuses, and collaborate inline.",
-    gradient: "from-violet-500/20 to-violet-600/5",
-    iconColor: "text-violet-500",
-    iconBg: "bg-violet-500/10",
-    border: "hover:border-violet-500/30",
-    glow: "hover:shadow-violet-500/10",
+    gradient: "from-purple-500/20 to-purple-600/5",
+    iconColor: "text-purple-500",
+    iconBg: "bg-purple-500/10",
+    border: "hover:border-purple-500/30",
+    glow: "hover:shadow-purple-500/10",
   },
   {
     icon: UsersRound,
@@ -107,10 +107,10 @@ const ROLES = [
   },
   {
     role: "HR",
-    color: "text-violet-500",
-    bg: "bg-violet-500/10",
-    border: "border-violet-500/20",
-    dot: "bg-violet-500",
+    color: "text-purple-500",
+    bg: "bg-purple-500/10",
+    border: "border-purple-500/20",
+    dot: "bg-purple-500",
     icon: UserCheck,
     description: "People operations — onboarding, leave approvals, attendance review, and HR reporting.",
     capabilities: ["Employee onboarding & profiles", "Approve/reject leave requests", "Monitor attendance trends", "Department management"],
@@ -138,10 +138,10 @@ const ROLES = [
 ];
 
 const STATS = [
-  { value: "4", label: "Role Types", sub: "Admin · HR · Manager · Employee", color: "text-blue-500" },
-  { value: "8+", label: "Core Modules", sub: "Employees, Leaves, Tasks, Salary…", color: "text-violet-500" },
+  { value: "4", label: "Role Types", sub: "Admin · HR · Manager · Employee", color: "text-orange-500" },
+  { value: "8+", label: "Core Modules", sub: "Employees, Leaves, Tasks, Salary…", color: "text-amber-500" },
   { value: "100%", label: "Web-Based", sub: "No install. Any device, anywhere.", color: "text-emerald-500" },
-  { value: "∞", label: "Scalable", sub: "Grows with your team, always.", color: "text-amber-500" },
+  { value: "∞", label: "Scalable", sub: "Grows with your team, always.", color: "text-yellow-600 dark:text-yellow-400" },
 ];
 
 const ACTIVITY_FEED = [
@@ -161,22 +161,22 @@ const ACTIVITY_FEED = [
     action: "Alex Kumar — leave approved",
     time: "Today, 09:15 AM",
     status: "Approved",
-    iconBg: "bg-blue-500/15",
-    iconColor: "text-blue-400",
-    statusBg: "bg-blue-500/10",
-    statusColor: "text-blue-400",
-    statusBorder: "border-blue-500/20",
+    iconBg: "bg-orange-500/15",
+    iconColor: "text-orange-400",
+    statusBg: "bg-orange-500/10",
+    statusColor: "text-orange-400",
+    statusBorder: "border-orange-500/20",
   },
   {
     icon: CheckSquare,
     action: "Design system review assigned",
     time: "Today, 09:31 AM",
     status: "Assigned",
-    iconBg: "bg-violet-500/15",
-    iconColor: "text-violet-400",
-    statusBg: "bg-violet-500/10",
-    statusColor: "text-violet-400",
-    statusBorder: "border-violet-500/20",
+    iconBg: "bg-purple-500/15",
+    iconColor: "text-purple-400",
+    statusBg: "bg-purple-500/10",
+    statusColor: "text-purple-400",
+    statusBorder: "border-purple-500/20",
   },
   {
     icon: Banknote,
@@ -248,11 +248,11 @@ function DashboardMockup() {
           {/* Sidebar */}
           <div className="w-48 shrink-0 border-r border-white/8 bg-zinc-900/80 p-3 flex flex-col gap-0.5">
             <div className="flex items-center gap-2 mb-4 px-2 py-1">
-              <div className="h-6 w-6 rounded-lg bg-blue-600 flex items-center justify-center text-[9px] text-white font-bold shadow-lg shadow-blue-600/40">E</div>
+              <div className="h-6 w-6 rounded-lg bg-orange-600 flex items-center justify-center text-[9px] text-white font-bold shadow-lg shadow-orange-600/40">E</div>
               <span className="font-semibold text-[11px] text-white/90 tracking-tight">Emplyra</span>
             </div>
             {[
-              { label: "Dashboard", active: true, dot: "bg-blue-500" },
+              { label: "Dashboard", active: true, dot: "bg-orange-500" },
               { label: "Employees", active: false, dot: "bg-zinc-600" },
               { label: "Attendance", active: false, dot: "bg-zinc-600" },
               { label: "Leaves", active: false, dot: "bg-zinc-600" },
@@ -264,7 +264,7 @@ function DashboardMockup() {
                 key={item.label}
                 className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-colors ${
                   item.active
-                    ? "bg-blue-600/20 text-blue-400 border border-blue-500/20"
+                    ? "bg-orange-600/20 text-orange-400 border border-orange-500/20"
                     : "text-white/40 hover:text-white/60"
                 }`}
               >
@@ -286,14 +286,14 @@ function DashboardMockup() {
                 <div className="h-6 w-6 rounded-full bg-white/8 border border-white/10 flex items-center justify-center">
                   <div className="h-2 w-2 rounded-full bg-white/40" />
                 </div>
-                <div className="h-6 px-3 rounded-lg bg-blue-600/80 text-[9px] text-white flex items-center font-medium">+ Add Employee</div>
+                <div className="h-6 px-3 rounded-lg bg-orange-600/80 text-[9px] text-white flex items-center font-medium">+ Add Employee</div>
               </div>
             </div>
 
             {/* KPI cards */}
             <div className="grid grid-cols-4 gap-2">
               {[
-                { label: "Total Employees", val: "124", delta: "+3", color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+                { label: "Total Employees", val: "124", delta: "+3", color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20" },
                 { label: "Present Today", val: "98", delta: "+12", color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
                 { label: "On Leave", val: "12", delta: "-2", color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
                 { label: "Pending Tasks", val: "7", delta: "+1", color: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/20" },
@@ -317,7 +317,7 @@ function DashboardMockup() {
               <div className="col-span-3 rounded-xl border border-white/8 bg-white/3 overflow-hidden">
                 <div className="flex items-center justify-between px-3 py-2 border-b border-white/8">
                   <span className="text-[9px] font-semibold text-white/60">Recent Employees</span>
-                  <span className="text-[8px] text-blue-400">View all</span>
+                  <span className="text-[8px] text-orange-400">View all</span>
                 </div>
                 <div className="divide-y divide-white/5">
                   {[
@@ -361,7 +361,7 @@ function DashboardMockup() {
                 <div className="rounded-xl border border-white/8 bg-white/3 p-3">
                   <div className="text-[9px] font-semibold text-white/60 mb-1.5">Active Tasks</div>
                   <div className="space-y-1">
-                    {[{ w: "w-3/4", c: "bg-red-500" }, { w: "w-1/2", c: "bg-amber-500" }, { w: "w-4/5", c: "bg-blue-500" }].map((t, i) => (
+                    {[{ w: "w-3/4", c: "bg-orange-500" }, { w: "w-1/2", c: "bg-amber-500" }, { w: "w-4/5", c: "bg-rose-500" }].map((t, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <div className={`h-1 rounded-full bg-white/10 flex-1`}><div className={`h-full rounded-full ${t.c}/60 ${t.w}`} /></div>
                         <div className={`h-1.5 w-1.5 rounded-full ${t.c}/80 shrink-0`} />
@@ -390,7 +390,7 @@ export function LandingPage({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         {/* Background — single light source, top-right; dot grid for depth */}
         <div className="absolute inset-0 -z-10 pointer-events-none" aria-hidden="true">
           <div className="absolute -top-32 -right-32 w-[900px] h-[900px] rounded-full bg-primary/7 blur-[150px]" />
-          <div className="absolute bottom-0 -left-20 w-[500px] h-[500px] rounded-full bg-violet-500/5 blur-[100px]" />
+          <div className="absolute bottom-0 -left-20 w-[500px] h-[500px] rounded-full bg-amber-500/6 blur-[100px]" />
           <div
             className="absolute inset-0 opacity-[0.018] dark:opacity-[0.045]"
             style={{
@@ -467,7 +467,7 @@ export function LandingPage({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
                 {/* Card header */}
                 <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.07]">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-6 w-6 rounded-lg bg-blue-600 flex items-center justify-center text-[9px] text-white font-black shadow-lg shadow-blue-600/40">
+                    <div className="h-6 w-6 rounded-lg bg-orange-600 flex items-center justify-center text-[9px] text-white font-black shadow-lg shadow-orange-600/40">
                       E
                     </div>
                     <span className="text-[11px] font-semibold text-white/60 tracking-tight">Emplyra Workspace</span>
@@ -709,8 +709,8 @@ export function LandingPage({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             {/* Right: Workflow steps */}
             <div id="workflow" className="space-y-3">
               {[
-                { n: "01", t: "Employee Joins", d: "HR creates the profile and assigns department, designation, and role — instantly active.", color: "border-blue-500/30 bg-blue-500/5", num: "text-blue-500" },
-                { n: "02", t: "HR Configures", d: "Set up leave types, balances, attendance rules, and salary in minutes.", color: "border-violet-500/30 bg-violet-500/5", num: "text-violet-500" },
+                { n: "01", t: "Employee Joins", d: "HR creates the profile and assigns department, designation, and role — instantly active.", color: "border-orange-500/30 bg-orange-500/5", num: "text-orange-500" },
+                { n: "02", t: "HR Configures", d: "Set up leave types, balances, attendance rules, and salary in minutes.", color: "border-rose-500/30 bg-rose-500/5", num: "text-rose-500" },
                 { n: "03", t: "Manager Leads", d: "Assign tasks, track team attendance, review leave — all from one dashboard.", color: "border-amber-500/30 bg-amber-500/5", num: "text-amber-500" },
                 { n: "04", t: "Employee Performs", d: "Check in, apply for leave, complete tasks, and view their own salary slip.", color: "border-emerald-500/30 bg-emerald-500/5", num: "text-emerald-500" },
                 { n: "05", t: "Admin Oversees", d: "Full organizational picture with live KPIs, payroll management, and quick actions.", color: "border-rose-500/30 bg-rose-500/5", num: "text-rose-500" },
@@ -736,7 +736,7 @@ export function LandingPage({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             <div className="absolute inset-0 bg-zinc-950 dark:bg-zinc-900" />
             {/* Orbs */}
             <div className="absolute top-0 left-1/4 w-64 h-64 rounded-full bg-primary/20 blur-[80px]" />
-            <div className="absolute bottom-0 right-1/4 w-64 h-64 rounded-full bg-violet-500/15 blur-[80px]" />
+            <div className="absolute bottom-0 right-1/4 w-64 h-64 rounded-full bg-amber-500/15 blur-[80px]" />
             {/* Border */}
             <div className="absolute inset-0 rounded-3xl ring-1 ring-white/10" />
 

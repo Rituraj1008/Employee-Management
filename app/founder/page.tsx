@@ -203,7 +203,7 @@ export default async function FounderPage() {
 
                 {/* Logo mark */}
                 <div className="flex items-center gap-2.5 opacity-50">
-                  <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-base shadow shadow-primary/30">
+                  <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center text-white font-black text-base shadow shadow-orange-500/30">
                     E
                   </div>
                   <span className="font-bold text-foreground tracking-tight text-sm">
