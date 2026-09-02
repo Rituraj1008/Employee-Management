@@ -17,14 +17,29 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/lib/utils/date";
+import Link from "next/link";
 import {
   Plus, Search, MessageSquare, Calendar, User, ChevronLeft,
   ChevronRight, AlertCircle, Flame, ArrowUp, Minus,
   ListTodo, Loader2, CheckCircle2, Eye, Clock3,
-  Building2, Briefcase,
+  Building2, Briefcase, FolderKanban, ChevronRight as ArrowRight,
 } from "lucide-react";
+import { formatWeekRange } from "@/lib/utils/weeks";
 
 /* ── Types ── */
+
+interface WeeklyTaskItem {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  progress: number;
+  weekNumber: number;
+  year: number;
+  managerRemark: string | null;
+  daysPlanned: number;
+  project: { id: string; name: string; createdAt: string; teamName: string | null };
+}
 
 interface Task {
   id: string;
@@ -56,6 +71,7 @@ interface TaskStats {
 
 interface TasksPageProps {
   tasks: Task[];
+  weeklyTasks: WeeklyTaskItem[];
   total: number;
   page: number;
   totalPages: number;
@@ -121,6 +137,7 @@ function isOverdue(dueDate: string | null): boolean {
 
 export function TasksPage({
   tasks,
+  weeklyTasks,
   total,
   page,
   totalPages,
@@ -134,6 +151,27 @@ export function TasksPage({
   const [createOpen, setCreateOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [searchValue, setSearchValue] = useState(searchParams.get("search") || "");
+  const [updatingWt, setUpdatingWt] = useState<string | null>(null);
+
+  const isEmployee = weeklyTasks.length > 0 || !canManage;
+
+  async function handleWeeklyStatusChange(wtId: string, projectId: string, status: string) {
+    setUpdatingWt(wtId);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/weekly-tasks/${wtId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) { toast.error("Failed to update"); return; }
+      toast.success("Status updated");
+      router.refresh();
+    } catch {
+      toast.error("Network error");
+    } finally {
+      setUpdatingWt(null);
+    }
+  }
 
   // Group assignable users by role for the form
   const groupedUsers = useMemo(() => {
@@ -241,8 +279,32 @@ export function TasksPage({
         </div>
       )}
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 items-center">
+      {/* ── My Project Tasks (employees) ── */}
+      {weeklyTasks.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <FolderKanban className="h-4 w-4 text-primary" />
+            <h3 className="font-semibold">My Project Tasks</h3>
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              {weeklyTasks.length}
+            </span>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-3">
+            {weeklyTasks.map((wt) => (
+              <WeeklyTaskCard
+                key={wt.id}
+                wt={wt}
+                isUpdating={updatingWt === wt.id}
+                onStatusChange={(v) => handleWeeklyStatusChange(wt.id, wt.project.id, v)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── General task system (managers / admins only) ── */}
+      {canManage && <div className="flex flex-wrap gap-2 items-center">
         <div className="relative flex-1 min-w-48 max-w-64">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
           <Input
@@ -296,9 +358,9 @@ export function TasksPage({
         )}
 
         <span className="text-xs text-muted-foreground ml-auto">{total} task{total !== 1 ? "s" : ""}</span>
-      </div>
+      </div>}
 
-      {/* Task cards */}
+      {canManage && <>{/* Task cards */}
       {tasks.length === 0 ? (
         <EmptyState canManage={canManage} onNew={() => setCreateOpen(true)} />
       ) : (
@@ -513,6 +575,7 @@ export function TasksPage({
           </div>
         </SheetContent>
       </Sheet>
+      </>}
     </div>
   );
 }
@@ -650,6 +713,118 @@ function StatCard({
       <div>
         <p className={`text-xl font-semibold tabular-nums ${styles.num}`}>{value}</p>
         <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ── Weekly Task Card (employee project task) ── */
+
+const WT_STATUS_OPTIONS = [
+  { value: "TODO",        label: "Not Started", short: "Not Started", icon: "○", cls: "border-zinc-300 text-zinc-500 bg-zinc-50 dark:bg-zinc-800/60 dark:border-zinc-600 dark:text-zinc-400" },
+  { value: "IN_PROGRESS", label: "Preparing",   short: "Preparing",   icon: "↺", cls: "border-blue-400 text-blue-700 bg-blue-50 dark:bg-blue-950/40 dark:border-blue-600 dark:text-blue-400" },
+  { value: "COMPLETED",   label: "Completed",   short: "Completed",   icon: "✓", cls: "border-emerald-400 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:border-emerald-600 dark:text-emerald-400" },
+] as const;
+
+function WeeklyTaskCard({
+  wt, isUpdating, onStatusChange,
+}: {
+  wt: WeeklyTaskItem;
+  isUpdating: boolean;
+  onStatusChange: (status: string) => void;
+}) {
+  const current = WT_STATUS_OPTIONS.find((o) => o.value === wt.status) ?? WT_STATUS_OPTIONS[0];
+
+  return (
+    <div className="rounded-xl border border-border bg-card flex flex-col overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      {/* Card header — project colour strip */}
+      <div className="h-1.5 bg-primary/70 w-full" />
+
+      <div className="p-4 flex-1 space-y-3">
+        {/* Project + team */}
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <FolderKanban className="h-3.5 w-3.5 text-primary shrink-0" />
+              <p className="text-sm font-semibold leading-tight">{wt.project.name}</p>
+            </div>
+            {wt.project.teamName && (
+              <p className="text-[11px] text-muted-foreground">Team: {wt.project.teamName}</p>
+            )}
+          </div>
+          <span className="text-[10px] font-mono font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded shrink-0">
+            W{wt.weekNumber}
+          </span>
+        </div>
+
+        {/* Week date range */}
+        <p className="text-[11px] text-muted-foreground">
+          {formatWeekRange(wt.project.createdAt, wt.weekNumber)}
+        </p>
+
+        {/* Task title */}
+        <div>
+          <p className="text-sm font-medium leading-snug">{wt.title}</p>
+          {wt.description && (
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{wt.description}</p>
+          )}
+        </div>
+
+        {/* Manager remark */}
+        {wt.managerRemark && (
+          <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-3 py-2">
+            <p className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-0.5">Manager Remark</p>
+            <p className="text-xs text-amber-900 dark:text-amber-300">{wt.managerRemark}</p>
+          </div>
+        )}
+
+        {/* Progress */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <span>{wt.daysPlanned}/6 days planned</span>
+            <span className="font-semibold text-primary">{wt.progress}%</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-border overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-500"
+              style={{ width: `${Math.min(100, wt.progress)}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Status bar — 3 buttons + open link */}
+      <div className="border-t border-border">
+        {isUpdating ? (
+          <div className="flex items-center justify-center py-2.5">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="flex">
+            {WT_STATUS_OPTIONS.map((opt, i) => (
+              <button
+                key={opt.value}
+                onClick={() => onStatusChange(opt.value)}
+                className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-[11px] font-semibold border-r last:border-r-0 border-border transition-colors ${
+                  wt.status === opt.value
+                    ? opt.cls
+                    : "text-muted-foreground hover:bg-muted/50"
+                }`}
+                title={opt.label}
+              >
+                <span className="text-base leading-none">{opt.icon}</span>
+                <span className="hidden sm:inline">{opt.short}</span>
+              </button>
+            ))}
+            <Link
+              href={`/projects/${wt.project.id}/weekly-tasks/${wt.id}`}
+              className="px-3 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-muted/50 transition-colors border-l border-border"
+              title="Open task detail"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

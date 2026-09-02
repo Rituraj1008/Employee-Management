@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/utils/date";
-import { ArrowLeft, Pencil, UserX, UserCheck, Clock, CalendarCheck, CalendarX, Coffee } from "lucide-react";
+import { ArrowLeft, Pencil, UserX, UserCheck, Clock, CalendarCheck, CalendarX, Coffee, KeyRound, Eye, EyeOff, Loader2 } from "lucide-react";
 import { RoleType } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
@@ -299,13 +299,17 @@ export function EmployeeDetailPage({
   leaveBalances,
 }: EmployeeDetailPageProps) {
   const router = useRouter();
-  const [editing,        setEditing]        = useState(false);
-  const [pending,        setPending]        = useState(false);
-  const [period,         setPeriod]         = useState<Period>("week");
-  const [deactivateOpen, setDeactivateOpen] = useState(false);
-  const [deactivating,   setDeactivating]   = useState(false);
-  const [activateOpen,   setActivateOpen]   = useState(false);
-  const [activating,     setActivating]     = useState(false);
+  const [editing,           setEditing]           = useState(false);
+  const [pending,           setPending]           = useState(false);
+  const [period,            setPeriod]            = useState<Period>("week");
+  const [deactivateOpen,    setDeactivateOpen]    = useState(false);
+  const [deactivating,      setDeactivating]      = useState(false);
+  const [activateOpen,      setActivateOpen]      = useState(false);
+  const [activating,        setActivating]        = useState(false);
+  const [resetPwOpen,       setResetPwOpen]       = useState(false);
+  const [newPassword,       setNewPassword]       = useState("");
+  const [showNewPw,         setShowNewPw]         = useState(false);
+  const [resettingPw,       setResettingPw]       = useState(false);
 
   const bars  = buildBars(attendanceRecords, period);
   const stats = computeStats(bars, period, attendanceRecords);
@@ -348,6 +352,24 @@ export function EmployeeDetailPage({
     finally { setDeactivating(false); setDeactivateOpen(false); }
   }
 
+  async function handleResetPassword() {
+    if (newPassword.length < 8) { toast.error("Password must be at least 8 characters"); return; }
+    setResettingPw(true);
+    try {
+      const res = await fetch(`/api/employees/${employee.id}/reset-password`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error || "Failed to reset password"); return; }
+      toast.success("Password reset — the member can now log in with the new password");
+      setResetPwOpen(false);
+      setNewPassword("");
+    } catch { toast.error("Network error"); }
+    finally { setResettingPw(false); }
+  }
+
   const STAT_CARDS = [
     { icon: <CalendarCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 shrink-0" />, label: period === "year" ? "Days Present" : "Present",                                        value: stats.present,                                                                          color: "text-green-600" },
     { icon: <CalendarX     className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-400   shrink-0" />, label: "Absent",                                                                              value: stats.absent,                                                                           color: "text-red-400"  },
@@ -382,6 +404,15 @@ export function EmployeeDetailPage({
               <span className="hidden sm:inline">Activate</span>
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs px-2.5 sm:px-3"
+            onClick={() => { setNewPassword(""); setShowNewPw(false); setResetPwOpen(true); }}
+          >
+            <KeyRound className="h-3.5 w-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Reset Password</span>
+          </Button>
           <Button size="sm" className="h-8 text-xs px-2.5 sm:px-3" onClick={() => setEditing(!editing)}>
             <Pencil className="h-3.5 w-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">{editing ? "Cancel" : "Edit"}</span>
@@ -680,6 +711,60 @@ export function EmployeeDetailPage({
             </Button>
             <Button variant="destructive" size="sm" onClick={handleDeactivateConfirm} disabled={deactivating}>
               {deactivating ? "Deactivating…" : "Yes, Deactivate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Reset Password Dialog ─────────────────────────────────────── */}
+      <Dialog open={resetPwOpen} onOpenChange={setResetPwOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Set a new login password for{" "}
+              <span className="font-medium text-foreground">
+                {employee.firstName} {employee.lastName}
+              </span>
+              . Share it with them so they can sign in.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2 space-y-1.5">
+            <Label htmlFor="new-password">New Password</Label>
+            <div className="relative">
+              <Input
+                id="new-password"
+                type={showNewPw ? "text" : "password"}
+                placeholder="Min. 8 characters"
+                className="h-10 pr-10"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleResetPassword(); }}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPw((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                tabIndex={-1}
+              >
+                {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {newPassword.length > 0 && newPassword.length < 8 && (
+              <p className="text-xs text-destructive">At least 8 characters required</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setResetPwOpen(false)} disabled={resettingPw}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleResetPassword}
+              disabled={resettingPw || newPassword.length < 8}
+            >
+              {resettingPw ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> Resetting…</> : "Reset Password"}
             </Button>
           </DialogFooter>
         </DialogContent>

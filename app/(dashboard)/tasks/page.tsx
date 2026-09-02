@@ -51,6 +51,25 @@ export default async function Page({
     where.title = { contains: params.search, mode: "insensitive" };
   }
 
+  const isEmployee = session.role === RoleType.EMPLOYEE;
+
+  // Weekly tasks for employees (from the Projects module)
+  const weeklyTasks = isEmployee && session.employeeId
+    ? await prisma.weeklyTask.findMany({
+        where: { assignedToId: session.employeeId },
+        orderBy: [{ year: "desc" }, { weekNumber: "desc" }],
+        include: {
+          project: {
+            select: {
+              id: true, name: true, createdAt: true,
+              team: { select: { name: true } },
+            },
+          },
+          _count: { select: { dailyTasks: true } },
+        },
+      })
+    : [];
+
   const [tasks, total, stats, assignableUsers] = await Promise.all([
     prisma.task.findMany({
       where,
@@ -114,6 +133,23 @@ export default async function Page({
 
   return (
     <TasksPage
+      weeklyTasks={weeklyTasks.map((wt) => ({
+        id: wt.id,
+        title: wt.title,
+        description: wt.description,
+        status: wt.status,
+        progress: wt.progress,
+        weekNumber: wt.weekNumber,
+        year: wt.year,
+        managerRemark: wt.managerRemark,
+        daysPlanned: wt._count.dailyTasks,
+        project: {
+          id: wt.project.id,
+          name: wt.project.name,
+          createdAt: wt.project.createdAt.toISOString(),
+          teamName: wt.project.team?.name ?? null,
+        },
+      }))}
       tasks={tasks.map((t) => ({
         id: t.id,
         title: t.title,

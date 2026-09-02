@@ -15,6 +15,7 @@ import {
   LogOut,
   UsersRound,
   Banknote,
+  FolderKanban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -66,10 +67,16 @@ const NAV_ITEMS: NavItem[] = [
     roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE],
   },
   {
+    label: "Projects",
+    href: "/projects",
+    icon: FolderKanban,
+    roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE],
+  },
+  {
     label: "Tasks",
     href: "/tasks",
     icon: CheckSquare,
-    roles: [RoleType.SUPER_ADMIN, RoleType.HR, RoleType.MANAGER, RoleType.EMPLOYEE],
+    roles: [RoleType.EMPLOYEE],
   },
   {
     label: "Salary",

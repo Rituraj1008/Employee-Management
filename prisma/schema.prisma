@@ -50,6 +50,18 @@ enum TaskPriority {
   URGENT
 }
 
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+}
+
+enum ProjectMemberRole {
+  LEAD
+  MEMBER
+}
+
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 model User {
@@ -63,6 +75,9 @@ model User {
   employee      Employee?
   createdTasks  Task[]    @relation("TaskCreator")
   assignedTasks Task[]    @relation("TaskAssignee")
+
+  createdProjects      Project[]               @relation("ProjectCreator")
+  managerChangesMade   ProjectManagerHistory[] @relation("ManagerChanger")
 
   @@map("users")
 }
@@ -123,6 +138,12 @@ model Employee {
   taskComments    TaskComment[]
   salary          EmployeeSalary?
   salarySlips     SalarySlip[]
+
+  managedProjects    Project[]               @relation("ProjectManager")
+  projectMemberships ProjectMember[]
+  weeklyTasks        WeeklyTask[]
+  workNotes          WorkNote[]
+  managerHistory     ProjectManagerHistory[] @relation("ManagerHistoryEmployee")
 
   @@index([userId])
   @@index([departmentId])
@@ -224,6 +245,7 @@ model Team {
   managerId   String?      @map("manager_id")
   manager     Employee?    @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
   members     TeamMember[]
+  projects    Project[]
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
@@ -325,4 +347,140 @@ model TaskComment {
 
   @@index([taskId])
   @@map("task_comments")
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────────
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(PLANNING)
+  deadline    DateTime?     @db.Date
+  teamId      String?       @map("team_id")
+  managerId   String?       @map("manager_id")
+  createdById String        @map("created_by_id")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  team           Team?                   @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  manager        Employee?               @relation("ProjectManager", fields: [managerId], references: [id], onDelete: SetNull)
+  createdBy      User                    @relation("ProjectCreator", fields: [createdById], references: [id])
+  members        ProjectMember[]
+  weeklyTasks    WeeklyTask[]
+  workNotes      WorkNote[]
+  managerHistory ProjectManagerHistory[]
+
+  @@index([teamId])
+  @@index([managerId])
+  @@index([status])
+  @@map("projects")
+}
+
+// Audit trail: every time admin changes the project manager, a row is added here.
+// removedAt = null means this person is currently the active manager.
+model ProjectManagerHistory {
+  id           String    @id @default(uuid())
+  projectId    String    @map("project_id")
+  managerId    String    @map("manager_id")
+  assignedAt   DateTime  @default(now()) @map("assigned_at")
+  removedAt    DateTime? @map("removed_at")
+  changedById  String    @map("changed_by_id")
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  manager   Employee @relation("ManagerHistoryEmployee", fields: [managerId], references: [id])
+  changedBy User     @relation("ManagerChanger", fields: [changedById], references: [id])
+
+  @@index([projectId])
+  @@map("project_manager_history")
+}
+
+model ProjectMember {
+  id         String            @id @default(uuid())
+  projectId  String            @map("project_id")
+  employeeId String            @map("employee_id")
+  role       ProjectMemberRole @default(MEMBER)
+  joinedAt   DateTime          @default(now()) @map("joined_at")
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, employeeId])
+  @@index([projectId])
+  @@index([employeeId])
+  @@map("project_members")
+}
+
+model WeeklyTask {
+  id           String     @id @default(uuid())
+  projectId    String     @map("project_id")
+  assignedToId String     @map("assigned_to_id")
+  title        String
+  description  String?
+  weekNumber   Int        @map("week_number")
+  year         Int
+  status        TaskStatus @default(TODO)
+  progress      Float      @default(0)
+  dueDate       DateTime?  @map("due_date") @db.Date
+  managerRemark String?    @map("manager_remark")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedTo Employee    @relation(fields: [assignedToId], references: [id])
+  dailyTasks DailyTask[]
+
+  @@index([projectId])
+  @@index([assignedToId])
+  @@index([weekNumber, year])
+  @@map("weekly_tasks")
+}
+
+model DailyTask {
+  id           String     @id @default(uuid())
+  weeklyTaskId String     @map("weekly_task_id")
+  title        String
+  description  String?
+  date         DateTime   @db.Date
+  status       TaskStatus @default(TODO)
+  notes        String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  weeklyTask     WeeklyTask      @relation(fields: [weeklyTaskId], references: [id], onDelete: Cascade)
+  checklistItems ChecklistItem[]
+
+  @@index([weeklyTaskId])
+  @@index([date])
+  @@map("daily_tasks")
+}
+
+model ChecklistItem {
+  id          String    @id @default(uuid())
+  dailyTaskId String    @map("daily_task_id")
+  text        String
+  isCompleted Boolean   @default(false) @map("is_completed")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  dailyTask DailyTask @relation(fields: [dailyTaskId], references: [id], onDelete: Cascade)
+
+  @@index([dailyTaskId])
+  @@map("checklist_items")
+}
+
+model WorkNote {
+  id         String   @id @default(uuid())
+  projectId  String   @map("project_id")
+  employeeId String   @map("employee_id")
+  content    String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([projectId])
+  @@index([employeeId])
+  @@map("work_notes")
 }
